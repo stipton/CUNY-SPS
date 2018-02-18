@@ -1,0 +1,150 @@
+---
+title: "Tipton DATA 607 Assignment 3"
+author: "Steve Tipton"
+date: "February 18, 2018"
+output:
+  html_document:
+    toc: true
+    # toc_float: true
+    toc_depth: 3  
+    theme: spacelab  # "default", "cerulean", "journal", "flatly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+    highlight: tango
+editor_options: 
+  chunk_output_type: console
+---
+
+### Exercise 3
+
+*Copy the introductory example. The vector `name` stores the extracted names.*
+
+```{r}
+# load packages
+library(stringr)
+library(XML)
+library(RCurl)
+library(tau)
+
+# A difficult example
+raw.data <- "555-1239Moe Szyslak(636) 555-0113Burns, C. Montgomery555-6542Rev. Timothy Lovejoy555 8904Ned Flanders636-555-3226Simpson, Homer5543642Dr. Julius Hibbert"
+
+# Extract information
+name <- unlist(str_extract_all(raw.data, "[[:alpha:]., ]{2,}"))
+name
+```
+
+a) *Use the tools of this chapter to rearrange the vector so that all elements conform to the standard first_name last_name.*
+
+In order to align all the names to a first_name last_name format, I created a function called `firstLast` to check each element of a given vector for a comma followed by a space.  For those cases, the function splits the element at the comma and then switches the order to place the first name before the second name.  Cases where the name is already properly formatted (i.e, the element does not contain a comma followed by a space) are ignored.
+
+```{r}
+firstLast <- function(x) {
+  for (i in 1:length(x)) {
+    if(unlist(str_detect(x[i], ", .+")) == TRUE) {
+      parts <- unlist(str_split(x[i], ", "))
+      x[i] <- paste(parts[2], parts[1])
+      }
+    }
+    return (x)
+}
+
+(name2 <- firstLast(name))
+```
+
+b) *Construct a logical vector indicating whether a character has a title (i.e., Rev. and Dr.).*
+
+I want to identify entries that contain a period preceded by multiple letters. In this data set, periods preceded by only one letter are not titles, but initials.
+
+```{r}
+(titled <- str_detect(name2, "[[:alpha:]]{2,}\\."))
+```
+
+c) *Construct a second logical vector indicating whether a character has a second name.*
+
+To find entries with middle names, I need to identify entries that contain two spaces but do not contain a title (using results form Part B).
+
+```{r}
+(spaced <- str_detect(name2, ".+? .+? .+?")) # find entries that contain two spaces
+(middleNames <- spaced - titled) # remove entries with titles
+```
+
+### Exercise 4
+
+*Describe the types of strings that conform to the following regular expressions and construct an example that is matched by the regular expression.*
+
+a) `[0-9]+\\$`
+
+This regular expression will return a string of numbers of any length terminated by a dollar sign. The dollar sign is escaped with the backslashes to disable its special functionality.
+
+```{r}
+exampleA <- "Steve 123 Arthur456$2$ St$7Art89$00000"
+unlist(str_extract_all(exampleA, "[0-9]+\\$"))
+```
+
+b) `\\b[a-z]{1,4}\\b`
+
+This regular expression will return a string of lowercase letters one to four characters in length.  Using the word boundary special characters means that only strings that begin and end within 1 to 4 characters will be returned.
+
+```{r}
+exampleB <- "john art b 3 John patrick pat.rick pat4.rrick 5hi5 jj^kk"
+# '3' not returned - digit
+# 'John' not returned - contains capital
+# 'patrick' not returned - too long
+# 'pat4' not returned - contains digit
+# 'rrick' not returned - too long
+# 'hi' not returned - not at a word boundary
+unlist(str_extract_all(exampleB, "\\b[a-z]{1,4}\\b"))
+```
+
+c) `.*?\\.txt$`
+
+This regular expression will return any string that ends (due to the dollar sign's special functionality) with the string `.txt`. Using the asterisk instead of the stars allows the regular expression to return strings that do not have any characters in front of the `.txt` portion of the string - using the plus sign would require at least one character to exist in front of the file extension.
+
+```{r}
+exampleC <- c(".txt", "dummy.txt")
+unlist(str_extract_all(exampleC, ".*?\\.txt$"))
+```
+
+The `?` character acting as a greedy stopper is superfluous in this instance, as the `$` character overrides any stop that the question mark may perform.
+
+```{r}
+exampleC2 <- c("dummy1.txt dummy2.txt")
+unlist(str_extract_all(exampleC2, ".*?\\.txt$")) # with '?'
+unlist(str_extract_all(exampleC2, ".*\\.txt$"))  # without '?'
+```
+
+d) `\\d{2}/\\d{2}/\\d{4}`
+
+This regular expression will extract strings with two digits followed by a forward slash, then two more digits and a forward slash, the four digits.  This pattern matches one type of date format.
+
+```{r}
+exampleD <- "Today's date is 02/04/1978"
+unlist(str_extract_all(exampleD, "\\d{2}/\\d{2}/\\d{4}"))
+```
+
+e) `<(.+?)>.+?</\\1>`
+
+This regular expression will extract strings inside arrow brackets, matching strings inside arrow brackets with a forward slash, and the text between the two.  This regular expression mimics HTML markdown language.
+
+```{r}
+exampleE <- "<strong>Emphasized text.</strong>"
+unlist(str_extract_all(exampleE, "<(.+?)>.+?</\\1>"))
+```
+
+
+### Exercise 9
+
+*The following code hides a secret message. Crack it with R and regular expressions.*
+
+Examining the code reveals a message hidden in the capital letters, with each word separated by a period. I devise a regular expression with uppercase letters, periods, and exclamation points to extract the message from the code.  I clean up the message using `paste` and `str_replace`/`str_replace_all` functions.
+
+```{r}
+code <- "clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0TanwoUwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigOd6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr"
+
+(crackedCode <- unlist(str_extract_all(code, "[A-Z.!]")))
+(crackedCode <- paste(crackedCode, collapse = ""))
+(crackedCode <- str_replace(crackedCode, "\\.", "! "))
+(crackedCode <- str_replace_all(crackedCode, "\\.", " "))
+
+```
+
+Unsure whether to be insulted or flattered by the secret message... :)
