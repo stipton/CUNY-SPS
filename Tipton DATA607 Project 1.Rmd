@@ -1,0 +1,138 @@
+---
+title: "Tipton DATA 607 Project 1"
+author: "Steve Tipton"
+date: "February 25, 2018"
+output:
+  html_document:
+    toc: true
+    # toc_float: true
+    toc_depth: 3  
+    theme: spacelab  # "default", "cerulean", "journal", "flatly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+    highlight: tango
+editor_options: 
+  chunk_output_type: console
+---
+
+## Overview
+
+Given a slightly structured text file with chess tournament results, use R to clean the data and calculate a new field for each competitor.  The final file should be available to export into a .CSV file suitable for uploading to a SQL database.
+
+## Importing the raw file into R
+
+I import the file from my working directory with the `read.table` function, using the options to specify that there is no header and that the delimiter for the fields is the "|" symbol.  The `fill` option fills in columns with "NA" values when lines of the text file do not have the correct amount of delimiters.  I specify that I do not want the strings read into the table as factors as well (this will allow for easier calculations later).
+
+```{r setup}
+dataChess <- read.table("607pro1info.txt", header = FALSE, sep = '|', fill = TRUE, stringsAsFactors = FALSE)
+head(dataChess)
+names(dataChess)
+dataChess$V1[dataChess$V1 == "-----------------------------------------------------------------------------------------"] <- NA ## clean-up to make the file easier to read
+dataChess
+```
+
+## Extract desired information into column vectors
+
+I use regular expressions in certain columns of the `dataChess` data frame to extract the desired values for the final data frame.
+
+### Player's Name
+
+Observing the raw data, I note that the player names live in the second column and are formatted in upper case letters.  Some entries also contain hyphens.  The names all contain at least two parts, but some have up to four parts.  The regular expression has two names mandatory and the final two names as optional components.
+
+After extracting the initial vector, I drop the first entry ("USCF ID"), which is not a name but part of the raw data column header.  I am left with a vector containing the 64 player names.
+
+```{r}
+library(stringr)
+playerName <- unlist(str_extract_all(dataChess$V2, "[A-Z]{1,} [A-Z]{1,}( [A-Z-]{1,})*( [A-Z-]{1,})*"))
+playerName
+playerName <- playerName[-1]
+playerName
+```
+
+### Player's State
+
+Extracting two-digit upper case values from the first column using regular expressions returns the state values as well as "NA" values.  Removing the "NA" values returns the correct vector of state names (length 64). 
+
+```{r}
+playerState <- unlist(str_extract_all(dataChess$V1, "[A-Z]{2}"))
+playerState
+playerState <- playerState[!is.na(playerState)]
+playerState
+```
+
+### Total Number of Points
+
+All of the values for points are formatted exactly the same, so one regular expression for a digit followed by a period followed by another digit calculated against the third column returns the desired vector. 
+
+```{r}
+totalPoints <- unlist(str_extract_all(dataChess$V3, "\\d\\.\\d"))
+totalPoints
+```
+
+### Player's Pre-Rating
+
+The pre-rating for all the players is prefaced with "R:" so the first regular expression finds these values including the "R:" - a second regular expression removes the "R:" and leaves only the numerical ranking.
+
+```{r}
+preRating <- unlist(str_extract_all(dataChess$V2, "R: {1,2}\\d{3,4}"))
+preRating
+preRating <- unlist(str_extract_all(preRating, "\\d{3,4}"))
+preRating
+```
+
+## Combine vectors into new data frame
+
+To begin assembling the final desired data frame, I use the `cbind.data.frame` function to compile the vectors calculated above into a preliminary data frame. I also add a column for the `playerNumber` at the front of the data frame to be referenced later when calculating the average opponent ranking.
+
+```{r}
+newChess <- cbind.data.frame(playerNumber = c(1:length(playerName)), playerName, playerState, totalPoints, preRating, stringsAsFactors = FALSE)
+```
+
+However, before I can calculate the final column of average opponent rankings for the output file, I need to modify the columns containing the opponent numbers into a usable format.  To start, I add a row index column to the raw data file, and then subset with a modulo function to return only the rows containing the opponent numbers.  I remove the first row (which was part of the raw data header) and also rename the columns.
+
+```{r}
+rowIndex <- c(1:length(dataChess$V1))
+dataChess <- cbind.data.frame(rowIndex, dataChess, stringsAsFactors = FALSE)
+opponents <- dataChess[dataChess$rowIndex %% 3 == 2, ]  ## modulo function to return rows with opponent numbers
+opponents <- opponents[-1, c(3,5:11)] ## drop first row with header info
+names(opponents) <- c("Name", "Round1", "Round2", "Round3", "Round4", "Round5", "Round6", "Round7")
+row.names(opponents) <- c(1:length(opponents$Name))
+opponents
+```
+
+I now have a data frame for each player's opponents, which I attach to the `newChess` data frame. The opponent columns also include extraneous letters, so I run a `for` loop to substring and trim the values in each opponent column to leave only the number.
+
+```{r}
+newChess <- cbind.data.frame(newChess, opponents, stringsAsFactors = FALSE)
+head(newChess)
+for(i in 7:13) {
+  newChess[,i] <- unlist(str_trim(str_sub(newChess[,i], 3)))
+}
+head(newChess)
+```
+
+## Calculate Average Pre Chess Rating of Opponents for all players
+
+Now that the data in the `newChess` data frame is clean, I can use the values to calculate the average pre chess rating of opponents for each player.  Using a `for` loop, I identify the numbers of the opponents for each player and then find their associated rankings.  Storing these rankings in a vector allows me to take the mean of the vector (removing "NA" values) and return that result into the proper place in a new column vector.
+
+```{r}
+avgOpponentPreRating <- numeric()  ## generate empty vector to gather values for final column
+
+for (i in 1:length(newChess[,1])) {
+  opponentNums <- newChess[i,7:13] ## extract vector containing opponent numbers
+  opponentNums <- opponentNums[!is.na(opponentNums)]
+  opponentPreRank <- newChess[as.numeric(opponentNums), 5] ## create vector with opponent rankings
+  avg <- mean(as.numeric(opponentPreRank), na.rm = TRUE) ## take mean of opponent rankings
+  avgOpponentPreRating[i] <- round(avg, 0) ## place mean in correct vector location
+}
+
+avgOpponentPreRating
+```
+
+## Attach final column and export
+
+Finally, I use the `cbind.data.frame` function to attach the desired columns from `newChess` to the new average column to create the final desired data frame.  I can export this file to my working directory using the `write.csv` function.
+
+```{r}
+finalChessData <- cbind.data.frame(newChess[,1:5], avgOpponentPreRating)
+finalChessData
+write.csv(finalChessData, "finalChessData.csv", row.names = FALSE)
+```
