@@ -1,0 +1,126 @@
+---
+title: "Tipton DATA607 Week 5 HW"
+author: "Steve Tipton"
+date: "March 4, 2018"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3  
+    theme: united  # "default", "cerulean", "journal", "flatly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+    highlight: pygments
+editor_options: 
+  chunk_output_type: console
+---
+
+## Overview and Environment Preparation
+
+The given chart describes arrival information for two different airlines at five different locations.  The goal of the assignment is to  use `tidyr` and `dplyr` as needed to tidy and transform the data and then to perform analysis to compare the arrival delays for the two airlines.
+
+A copy of this R Markdown file and the associated .csv file are located in my Github directory at:
+
+https://github.com/stipton/CUNY-SPS/tree/master/DATA%20607/Week%205
+
+```{r, results = "hide"}
+rm(list = ls())
+library(plyr)
+library(tidyr)
+library(ggplot2)
+library(reshape2)
+```
+
+## Import .csv file
+
+After copying the information in a .csv file, I use the `read.csv` function to import the infomation into R.
+
+```{r}
+arrivals.raw <- read.csv("DATA607HW5data.csv", header = TRUE, stringsAsFactors = FALSE)
+arrivals.raw
+```
+
+## Tidy and Transform the Data
+
+As an initial step in cleaning up the data, I add names to the first two columns, fill in the missing airline names, and remove the empty row from the data. 
+
+```{r}
+names(arrivals.raw)[1:2] <- c("airline", "status")
+arrivals.raw[2,1] <- "ALASKA"
+arrivals.raw[5,1] <- "AM WEST"
+arrivals <- arrivals.raw[-3,]
+arrivals
+```
+
+The information in the file is cross-tabulated - helpful for viewing and presenting to end users, but not the best format for performing analysis.  Examining the data reveals several variables that should be separated into their own columns:
+
+* Airline: Alaska or AM West
+* Status: on time or delayed
+* City: Los Angeles, Phoenix, San Diego, San Francisco, or Seattle
+* Frequency ("n"): a column showing the frequency for each combination of the three variables
+
+The `gather` function melts the wide data set into the long form.
+
+```{r}
+(arrivals <- gather(arrivals, "city", "n", 3:7))
+```
+
+Since each airline and city combination has values for both on time and delayed arrivals, it is more appropriate to have columns for that information to aid in the analysis section.  The `spread` function brings the data into two columns.
+
+```{r}
+(arrivals <- spread(arrivals, status, n))
+```
+
+As one final piece of tidying, I use the `make.names` function to ensure that all the column names created from the data are in the correct format (to wit, the space must be removed from the `on time` column name).
+
+```{r}
+names(arrivals) <- make.names(names(arrivals))
+arrivals
+```
+
+## Analysis
+
+To begin comparing the arrival delays between the two airlines, I used the `mutate` function to add columns for the total number of flights per row, as well as the frequency of delayed and on-time arrivals.
+
+```{r}
+(arrivals <- mutate(arrivals, 
+                    total = delayed + on.time, 
+                    freq.del = delayed / total, 
+                    freq.on = on.time / total))
+```
+
+### Overall Delayed Flights by Airline
+
+Subsetting the dataset by airline, I calculated the frequency of delayed flights for each by taking the total number of delayed flights over the total number of flights.  
+
+```{r}
+arrivals.alaska <- subset(arrivals, airline == "ALASKA")
+arrivals.amwest <- subset(arrivals, airline == "AM WEST")
+
+(ak.freq.del <- sum(arrivals.alaska$delayed) / sum(arrivals.alaska$total))
+(am.freq.del <- sum(arrivals.amwest$delayed) / sum(arrivals.amwest$total))
+
+freq.overall <- data.frame(airline = c("Alaska", "AM West"), freq.del = c(ak.freq.del, am.freq.del))
+ggplot(freq.overall, aes(airline, freq.del, fill = airline)) +
+  geom_col() + 
+  labs(title = "Overall Frequency of Delays by Airline", x = "Airline", y = "Frequency of Delays")
+```
+
+Overall, Alaska Airlines, with 13.3% delayed arrivals for these cities, fares more poorly than AM West Airlines, with 10.9% delayed arrivals for these cities.
+
+### Delayed Flights by City
+
+To see how each airline performs within each city, I constructed a barplot to compare the frequency of delays.  From the barplot, we can see that the frequency of delayed arrivals is lower in each city for Alaska Airlines than AM West Airlines.  This result is unexpected, given that the frequency of delayed arrivals for Alaska Airlines overall was higher than AM West Airlines. 
+
+```{r}
+arrivals.long <- melt(arrivals, id.vars = c("airline", "city", "freq.del"))
+
+ggplot(arrivals.long, aes(city, freq.del, fill = airline)) +
+  geom_col(position = "dodge") + 
+  labs(title = "Frequency of Delays by City and Airline", x = "City", y = "Frequency of Delays")
+```
+
+### Which Airline to Choose???
+
+This exercise highlights an example of perspective in statistics, where the outcome of the statistics changes depending on how you look at the problem.  In such cases, it is important to evaluate what factors are at play within the data that create apparently conflicting results.
+
+In this case, the large number of flights that AM West services into Phoenix is affecting the overall result.  Because the scale of that number is much larger than the other values in the data set, the large number of on-time flights for AM West into Phoenix is able to absorb the airline's delayed flights in other cities for the overall frequency of delays.  As a result, the overall frequency of delays for AM West is lower than the overall frequency for Alaska Airlines.  Breaking down the arrivals by city properly aligns the data to compare the airlines along the same factor.
+
+As a matter of perspective, this method of comparing delays by city may be best for a consumer deciding on which plane ticket to buy.  However, clever marketers (or in other cases, clever politicians) may choose the overall frequency as a truthful but slightly more opaque statistic.
