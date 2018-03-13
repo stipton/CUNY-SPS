@@ -1,0 +1,90 @@
+---
+title: "DATA 607 Presentation"
+subtitle: "Confusion Matrices"
+author: "Steve Tipton"
+date: "March 14, 2018"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+---
+
+## Long, long ago....
+
+Recall the question Zack Dravis left us with at the end of his presentation on KNN (K numbered neighbors):
+
+*"How to measure success [of the knn model]?"*
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+set.seed(1234)
+
+HumanHeight <- rnorm(200, mean = 5.5, sd = .5)
+WookieHeight <- rnorm(200, mean = 7.0, sd = .75)
+EwokHeight <- rnorm(200, mean = 4, sd = .5)
+
+HumanWeight <- rnorm(200, mean = 150, sd = 30)
+WookieWeight <- rnorm(200, mean = 200, sd = 50)
+EwokWeight <- rnorm(200, mean = 125, sd = 30)
+
+SWSpecies <- data.frame(Species = c(rep("Human", 200), rep("Wookie", 200), rep("Ewok", 200)), Height = c(HumanHeight, WookieHeight, EwokHeight), Weight = c(HumanWeight, WookieWeight, EwokWeight))
+
+library(ggplot2)
+library(dplyr)
+
+#Split into training and test
+TrainingData <- SWSpecies %>%
+  group_by(Species) %>%
+  slice(1:133) %>%
+  ungroup()
+
+TestData <- SWSpecies %>%
+  group_by(Species) %>%
+  slice(134:200) %>%
+  ungroup()
+
+library(class)
+
+
+library(knitr)
+library(kableExtra)
+```
+
+## Summarize Zach's project
+
+## Running the process with two different $k$ values
+
+```{r}
+SpeciesPrediction <- knn(train = select(TrainingData, Height, Weight), 
+                         test = select(TestData, Height, Weight), 
+                         cl = TrainingData$Species, 
+                         k = 3)
+FirstTest <- cbind(TestData, SpeciesPrediction)
+FirstTest %>%  kable("html", caption = "k = 3") %>%
+  kable_styling(bootstrap_options = c("striped"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+```{r}
+SpeciesPrediction <- knn(train = select(TrainingData, Height, Weight), 
+                         test = select(TestData, Height, Weight), 
+                         cl = TrainingData$Species, 
+                         k = 9)
+FirstTest <- cbind(TestData, SpeciesPrediction)
+FirstTest %>%  kable("html", caption = "k = 9") %>%
+  kable_styling(bootstrap_options = c("striped"), full_width = FALSE) %>%
+  scroll_box(height = "500px")
+```
+
+## Simple accuracy
+
+* calculate from Zach
+* sufficient (book quote)
+
+## Confusion Matrix
+
+* Describe boxes
+* Describe overall statistics (Accuraty and Error)
+* Describe other statistics
+
+* Wikipedia example
+* Calculate from Zach
