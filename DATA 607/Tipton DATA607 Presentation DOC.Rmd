@@ -51,6 +51,8 @@ library(kableExtra)
 
 ## Summarize Zach's project
 
+http://rpubs.com/zdravis/368000
+
 ## Running the process with two different $k$ values
 
 ```{r}
@@ -75,16 +77,31 @@ FirstTest %>%  kable("html", caption = "k = 9") %>%
   scroll_box(height = "500px")
 ```
 
+## Create simulation of base results
+
+* vector replicate ewok (66), human (67), wookie (67)
+* vector 1-200
+* sample all without replacement
+* use sample vector to assign species
+
 ## Simple accuracy
 
-* calculate from Zach
+* calculate from Zach and from simulation
 * sufficient (book quote)
 
 ## Confusion Matrix
 
 * Describe boxes
-* Describe overall statistics (Accuraty and Error)
+* Describe overall statistics (Accuracy and Error)
 * Describe other statistics
+* link to helpful website (http://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/)
 
 * Wikipedia example
-* Calculate from Zach
+
+## Star Wars example
+
+* Calculate from Zach and simulation by hand
+
+## Confusion Matrix in R
+
+* Calculate all three in R
