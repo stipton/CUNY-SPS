@@ -1,0 +1,352 @@
+---
+title: "Tipton DATA607 Project 2"
+author: "Steve Tipton"
+date: "March 11, 2018"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3  
+    theme: united  # "default", "cerulean", "journal", "flatly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+    highlight: pygments
+editor_options: 
+  chunk_output_type: console
+---
+
+## Overview and Environment Preparation
+
+In this project, we are instructed to choose three of the data sets submitted by other students in the Week 5 discussion forum.  For each data set, we are to:
+
+* Create a .CSV file (or a MySQL database) including all of the information in the data set in its initial "wide" format.
+* Read the information into R from the file.
+* Use functions from `tidyr` and `dplyr` to tidy and transform the data.
+* Perform analysis on the data as suggested in the discussion forum post.
+
+A copy of this R Markdown file and the associated .csv and .sql files are located in my Github directory at:
+
+https://github.com/stipton/CUNY-SPS/tree/master/DATA%20607%20Project%202
+
+```{r, results = "hide"}
+rm(list = ls())
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(RMySQL)
+```
+
+In my tidying and data analysis, I found it helpful to list both the head and the tail of data frames together, so I also defined a function to output head and tail together in a list.
+
+```{r}
+headtail <- function(d, m = 5, n = m) {
+  list(HEAD = head(d, m), TAIL = tail(d, n))
+}
+# source: https://stackoverflow.com/questions/11600391/combining-head-and-tail-methods-in-r
+```
+
+## Part One - Dengue Fever Occurrence in the Belize District
+
+Submitted by Albert Gilharry from the Ministry of Health, Belize.
+
+### Create .CSV file and read into R
+
+The data set was relatively small and straight-forward, so I selected it for the first part of my project as a warm-up to practice the basic skills of importing, tidying, and plotting.
+
+I copied the information from Blackboard into a .CSV file and read the file into R, transforming it into a `tbl_df` format for easier viewing.
+
+```{r}
+denge <- read.csv("dengefever.csv", stringsAsFactors = FALSE) %>% 
+  tbl_df()
+denge
+```
+
+### Tidy and Transform
+
+To clean the data, I changed the two null values in the `Type` column to have the value "Unknown." This label will help with categorization later.  I also renamed the columns to remove the x from the year.  Finally, I want to restructure this data in to the long format using the `gather` format on the variable "Year."
+
+```{r}
+denge$Type[13:14] <- "Unknown"
+colnames(denge)[3:10] <- seq(2007, 2014)
+denge <- gather(denge, "Year", "n", 3:10)
+```
+
+### Analysis
+
+With the data tidied, I plotted the occurrence rate for each community over time.  We see from the graph that while most communities have an occurrence rate that stays mostly below one in one hundred, the rate for Belize City skyrockets over this time period.  This line graph is a useful comparison to show the striking contrast between Belize City and the other communities.
+
+```{r}
+ggplot(denge, aes(Year, n, group = Community)) +
+  geom_line(aes(color = Community), size = 1)+
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_y_continuous(breaks = seq(0, 18, 1))+
+  labs(title = "Dengue Fever occurrence for selected communities in the Belize District",
+       x = "Year",
+       y = "Rate per 100 people")
+```
+
+I attempted to show what a graph of the data would look like without the line for Belize City - the obvious outlier - but the `filter` command refused to work on any field with a space in it.  To investigate further!
+
+```{r}
+# denge %>%
+#   filter(Community != "Belize City") %>%
+#   ggplot(aes(Year, n, group = Community)) +
+#     geom_line(aes(color = Community), size = 1)+
+#     geom_point() +
+#     theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+#     labs(title = "Dengue Fever occurrence for selected communities in the Belize District",
+#          x = "Year",
+#          y = "Rate per 100 people")
+```
+
+I also created a jitter plot showing rates by community type.  The jitter plot is useful to show that we have more data points for the rural communities than the urban communities, which will help inform how we view the difference between rural and urban communities.
+
+```{r}
+ggplot(denge, aes(Type, n)) +
+  geom_jitter(aes(color = Community), size = 2) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(title = "Dengue Fever occurrence by Community Type",
+       x = "Community Type",
+       y = "Rate per 100 people")
+```
+
+## Part Two - Child Mortality Data
+
+Submitted by Raj Kumar from http://www.childmortality.org
+
+### Create .CSV file and read into R
+
+The data file is available to download from a link on the website's main page as an Excel document.  The first few rows contain title and reference information, so I deleted those rows and saved to my working directory as .CSV file starting only with the header rows.
+
+![*Non-data header information from original Excel file*](childmortheaderinfo.png)
+
+The Excel file also contains definitions of the variables, which I will use to help tidy and transform the data.
+
+![*Variable definitions*](childmortdef.png)
+
+```{r}
+child_mort <- read.csv("PRO2.1 UNIGME Rates & Deaths_Under5.csv", stringsAsFactors = FALSE) %>% 
+  tbl_df()
+```
+
+### Tidy and Transform
+
+After importing the .CSV file, I transformed the data set into `tbl` class, which allows me to examine the structure of the data more easily.
+
+```{r}
+child_mort
+```
+
+There are several variables intermixed within this data set that I'd like to separate out into individual columns.  The variables for `ISO.Code`, `CountryName`, and `Uncertainty.bounds.` are already separated out into columns.  Additionally, I'd like to separate out the age range (Under-5, Infant, and Neonatal) and year.
+
+This data set also contains both rates of mortality and actual numbers of deaths for each country/year combination.  My final tidied data set should have the rates and numbers in separate columns for each country/year.
+
+To start, I followed Raj's suggestion to simplify the analysis by focusing on only the median values for each country, removing the lower and upper bounds.  
+
+```{r}
+child_mort <- filter(child_mort, Uncertainty.bounds. == "Median") %>% 
+  gather("Type.Year", "n", 4:405)
+```
+
+I also gathered the data into a long format, defining a new column as `Type.Year`.
+
+```{r}
+head(child_mort, n = 10)
+```
+
+In order to split the `Type.Year` into two columns, I reformatted the data in the column.  Since some of the values in the column had multiple periods, I used the `str_replace` function with a regular expression to change the delimiter between the type and the year into a hyphen.  Once changed, I can use the `separate` function to split the column in two.
+
+```{r}
+child_mort$Type.Year <- str_replace(child_mort$Type.Year, "\\.1", "-1")
+child_mort$Type.Year <- str_replace(child_mort$Type.Year, "\\.2", "-2")
+headtail(child_mort, n = 2) # verify that final periods are hyphens
+child_mort <- separate(child_mort, col = Type.Year, into = c("AgeRange", "Year"), sep = "-")
+headtail(child_mort)
+```
+
+Looking at the values in the `n` column, some are rates and some are counts, depending on the value in the `AgeRange` column.  I use the `filter` command to split the rows out by their `AgeRange` value, and then I join the two filtered tables back together with the `full_join` funtion.  I also clean up the column names and ensure that they match for the join.
+
+```{r}
+distinct(child_mort, AgeRange)
+
+child_mort.rates <- child_mort %>%
+  filter(AgeRange == "U5MR" | AgeRange == "IMR" | AgeRange == "NMR")
+child_mort.rates$AgeRange <- recode(child_mort.rates$AgeRange, 
+                                     U5MR = "under five", 
+                                     IMR = "infant", 
+                                     NMR = "neonatal")
+colnames(child_mort.rates) <- c("ISOCode", "countryName", "uncertaintyBounds", "ageRange", "year", "rate")
+
+child_mort.counts <- child_mort %>%
+  filter(!(AgeRange %in% c("U5MR", "IMR", "NMR")))
+child_mort.counts$AgeRange <- recode(child_mort.counts$AgeRange, 
+                                     Under.five.Deaths = "under five", 
+                                     Infant.Deaths = "infant", 
+                                     Neonatal.Deaths = "neonatal")
+colnames(child_mort.counts) <- c("ISOCode", "countryName", "uncertaintyBounds", "ageRange", "year", "deaths")
+
+headtail(child_mort.rates)
+headtail(child_mort.counts)
+
+child_mort <- full_join(child_mort.rates, child_mort.counts)
+headtail(child_mort)
+```
+
+### Analysis
+
+The discussion post did not contain any specific instructions for analysis.  To begin, I decided to create a visualization showing the average worldwide child mortality rates, separated out by the Age Range.  The first plot shows the three groups together on one graph.  I practiced using many different elements of the `ggplot2` package to format the various pieces of the graph, such as the x-axis labels and the legend title.
+
+```{r}
+child_mort %>% 
+  group_by(ageRange, year) %>% 
+  summarize(avg = mean(rate, na.rm = TRUE)) %>%
+  ggplot(aes(year, avg, fill = ageRange)) + 
+    geom_bar(stat = 'identity', position = 'dodge') + 
+    theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+    scale_x_discrete(name = "Year", breaks = seq(1950, 2016, 3)) +
+    scale_y_continuous(name = "Average Child Mortality Rate (out of 1000 live births)", breaks = seq(0, 180, 20)) +
+    ggtitle("Child Mortality Rates by Age Range", "Worldwide Average") + 
+    scale_fill_discrete(name = "Age Range")
+```
+
+Below I created a graph showing the same information, but using `facet_grid` to separate each Age Range into its own graph.
+
+```{r}
+child_mort %>% 
+  group_by(ageRange, year) %>% 
+  summarize(avg = mean(rate, na.rm = TRUE)) %>%
+  ggplot(aes(year, avg)) +
+    geom_point() +
+    facet_grid(. ~ ageRange) +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+    scale_x_discrete(name = "Year", breaks = seq(1950, 2016, 6)) +
+    scale_y_continuous(name = "Average Child Mortality Rate (out of 1000 live births)", breaks = seq(0, 180, 20)) +
+    ggtitle("Child Mortality Rates by Age Range", "Worldwide Average") + 
+    scale_fill_discrete(name = "Age Range")
+```
+
+I noted that for both of these graphs, R automatically removed the missing data point for neonatal mortality rate for 1950.  I also noted that overall we see a very happy downward trend with in child mortality, with the sharpest decrease occuring in the under five age range during this time span.
+
+## Part Three - NYC MTA MetroCard Swipes
+
+Submitted by Jeremy O'Brien
+
+### Create SQL database and read into R
+
+With the most data of my three data sets, I decided to challenge myself to create a SQL database with the MTA information and connect it to another data set with additional information.
+
+I created a .CSV file with Jeremy's information from his github link (https://raw.githubusercontent.com/JeremyOBrien16/NYC-MTA-Weekly-MetroCard-Swipes/master/Fare_Card_History_for_Metropolitan_Transportation_Authority__MTA___Beginning_2010.csv).  I wanted to find additional information to add to his data set, and I found a data set from the MTA website online containing line information for each station by the remote booth number listed in Jeremy's data set (http://web.mta.info/developers/resources/nyct/turnstile/Remote-Booth-Station.xls).
+
+I made an initial clean of the stationline data set in the .CSV file before uploading to SQL in order to have unique values for each remote station ID.  In doing so, I lost the ability to track the subway division (IRT vs. IND, etc.) but for the purposes of this project, I decided to focus solely on the subway lines and forgo the division data.
+
+Additionally, in uploading the ridedata file to the SQL database (using the `loadmta` file found on my github page), duplicate values as determined by my primary key set-up for that table were discarded.  From the 180,608 original entries, 179,679 unique observations were uploaded into the SQL database.
+
+```sql
+`r paste(readLines('loadmta.sql'), collapse = '\n')`
+```
+
+### Tidy and Transform
+
+I connected MySQL to R and read in the station list table first.
+
+```{r echo = -1}
+password <- "MSds2018!"
+
+driver <- dbDriver("MySQL")
+con <- dbConnect(driver, 
+                 user = "root", 
+                 password = password, ## password hidden in previous code 
+                 dbname = "mta")
+
+dbListTables(con)
+
+sql_getStationList <- "SELECT Remote, Station, LineName FROM stationlines"
+stationList <- dbGetQuery(con, sql_getStationList)
+```
+
+The LineNames column of this table has a single character string for each station with all the lines serviced by that station concatenated into one single string.  I extracted the information from those strings into atomic variables for each subway line.
+
+```{r}
+## extract all unique strings from the ListNames column and split into single characters
+trainLines <- stationList$LineName %>%
+  unique() %>%
+  paste(collapse = "") %>%
+  str_split("") %>%
+  unlist() %>%
+  unique() ## retain a vector of unique single characters referencing all subway lines in the data set
+
+trainLines <- trainLines[order(trainLines)]
+```
+
+Using my vector of unique train lines, I use two `for` loops to check whether each station in the stationlines data set services that line.  As I complete the check for each line, I add its corresponding column to the original data set.  Lastly, I update the names of the newly added columns with the names of the train lines.
+
+```{r}
+for(i in 1:length(trainLines)) {
+  x <- vector(length = length(stationList$LineName))
+  for(j in 1:length(stationList$LineName)) {
+    if(str_detect(stationList$LineName[j], trainLines[i]) == TRUE) {
+      x[j] <- 1
+    } else {
+      x[j] <-0
+    }
+  }
+  stationList <- cbind.data.frame(stationList, x)
+}
+
+colnames(stationList)[4:length(stationList[1,])] <- trainLines
+```
+
+The stationlist data set now has columns of 1's and 0's showing whether or not a line goes through each station.
+
+```{r}
+headtail(stationList)
+```
+
+Finally, I read the ridedata from SQL into R and joined the two data sets together with the `join` functionality.
+
+```{r}
+sql_getRidedata <- "SELECT * FROM ridedata"
+ridedata <- dbGetQuery(con, sql_getRidedata)
+colnames(ridedata)[3] <- "Remote" ## rename column to facilitate join
+mtadata <- left_join(ridedata, stationList, by = "Remote")
+headtail(mtadata)
+```
+
+I took a quick look at any unmatched stations from the ridedata set that did not have a match in the stationlist data set.  For the most part, these are newer stations, such as the 34th Street station in Hudson Yards or the new stations along the 2nd Avenue Q line extension.  For the purposes of this project, and since there is still a great deal of matched information, I decided to work with just the matched information.
+
+```{r}
+z <- subset(mtadata, is.na(LineName))
+distinct(z, Remote, Station.x)
+mtadata <- subset(mtadata, !is.na(LineName))
+```
+
+### Analysis
+
+In the discussion board post, one question arose around full fare vs. unlimited rides.  Using the mutate function, I computed a full_unlim_score from the raw data.  For each line, I computed the difference between all unlimited ride types and full fare rides (regular and senior/ADA).  I used difference to avoid dividing by zero with a ratio.
+
+```{r}
+mtadata <- mutate(mtadata, full_unlim_score = ((SevenDayADAFarecardAccessSystemUnlimited + ThirtyDayADAFarecardAccessSystemUnlimited + SevenDayUnlimited + ThirtyDayUnlimited + FourteenDayReducedFareMediaUnlimited + OneDayUnlimited + FourteenDayUnlimited) - (FullFare + SeniorCitizen_Disabled)))
+
+mtadata_score <- select(mtadata, FromDate, ToDate, Remote, Station.x, full_unlim_score)
+head(mtadata_score)
+```
+
+First, I grouped the information by Remote ID, then took the average full_unlim_score for each station.  I gathered that information by train line and then found the average difference for each train line to create a bar graph.  On average for this data, we see that the B/D/F/M/L are the leading train lines for unlimited passes and the A/C/E/S lines favor the full fare swipes.
+
+```{r}
+mtadata_score %>% 
+  group_by(Remote) %>% 
+  summarize(avg = mean(full_unlim_score, na.rm = TRUE)) %>%
+  arrange(avg) %>%
+  left_join(stationList) %>%
+  gather("Line", "YesNo", 5:27) %>%
+  mutate(line_score = avg * YesNo) %>%
+  group_by(Line) %>%
+  summarize(LineAvg = mean(line_score, na.rm = TRUE)) %>%
+  arrange(LineAvg) %>%
+  filter(Line != "P") %>% ## removing PATH trains from NYC MTA analysis
+  ggplot(aes(Line, LineAvg)) +
+    geom_bar(stat = "identity") +
+    labs(title = "Average Difference in Unlimited Ride vs. Full Fare Swipes",
+       x = "MTA Line",
+       y = "Average Difference")
+```
+
