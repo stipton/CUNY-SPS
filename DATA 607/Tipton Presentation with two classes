@@ -25,16 +25,16 @@ In the comments section during the presentation, Prof. Catlin suggested using a 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 set.seed(1234)
 
-## HumanHeight <- rnorm(200, mean = 5.5, sd = .5)
+HumanHeight <- rnorm(200, mean = 5.5, sd = .5)
 WookieHeight <- rnorm(300, mean = 7.0, sd = .75)
-EwokHeight <- rnorm(300, mean = 4, sd = .5)
+##EwokHeight <- rnorm(300, mean = 4, sd = .5)
 
-## HumanWeight <- rnorm(200, mean = 150, sd = 30)
+HumanWeight <- rnorm(200, mean = 150, sd = 30)
 WookieWeight <- rnorm(300, mean = 200, sd = 50)
-EwokWeight <- rnorm(300, mean = 125, sd = 30)
+##EwokWeight <- rnorm(300, mean = 125, sd = 30)
 
 ## SWSpecies <- data.frame(Species = c(rep("Human", 200), rep("Wookie", 200), rep("Ewok", 200)), Height = c(HumanHeight, WookieHeight, EwokHeight), Weight = c(HumanWeight, WookieWeight, EwokWeight))
-SWSpecies <- data.frame(Species = c(rep("Wookie", 300), rep("Ewok", 300)), Height = c(WookieHeight, EwokHeight), Weight = c(WookieWeight, EwokWeight))
+SWSpecies <- data.frame(Species = c(rep("Human", 300), rep("Wookie", 300)), Height = c(HumanHeight, WookieHeight), Weight = c(HumanWeight, WookieWeight))
 
 library(ggplot2)
 library(dplyr)
