@@ -1,0 +1,80 @@
+---
+title: "DATA 607 Presentation"
+author: "Steve Tipton"
+date: "March 12, 2018"
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Markdown
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Output
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+set.seed(1234)
+
+HumanHeight <- rnorm(200, mean = 5.5, sd = .5)
+WookieHeight <- rnorm(200, mean = 7.0, sd = .75)
+EwokHeight <- rnorm(200, mean = 4, sd = .5)
+
+HumanWeight <- rnorm(200, mean = 150, sd = 30)
+WookieWeight <- rnorm(200, mean = 200, sd = 50)
+EwokWeight <- rnorm(200, mean = 125, sd = 30)
+
+SWSpecies <- data.frame(Species = c(rep("Human", 200), rep("Wookie", 200), rep("Ewok", 200)), Height = c(HumanHeight, WookieHeight, EwokHeight), Weight = c(HumanWeight, WookieWeight, EwokWeight))
+
+library(ggplot2)
+
+ggplot(SWSpecies, aes(x=Height, y=Weight, color=Species, shape=Species)) +
+  geom_point()
+
+library(dplyr)
+
+#Split into training and test
+TrainingData <- SWSpecies %>%
+  group_by(Species) %>%
+  slice(1:133) %>%
+  ungroup()
+
+TestData <- SWSpecies %>%
+  group_by(Species) %>%
+  slice(134:200) %>%
+  ungroup()
+
+library(class)
+SpeciesPrediction <- knn(train = select(TrainingData, Height, Weight), test = select(TestData, Height, Weight), cl = TrainingData$Species, k=3)
+
+library(knitr)
+library(kableExtra)
+options(knitr.table.format = "html")
+```
+
+## table
+
+```{r}
+FirstTest <- cbind(TestData, SpeciesPrediction)
+FirstTest %>%  kable("html") %>%
+  kable_styling(bootstrap_options = c("striped"))
+```
+
+## x
+
+SpeciesPrediction <- knn(train = select(TrainingData, Height, Weight), test = select(TestData, Height, Weight), cl = TrainingData$Species, k=9)
+
+SecondTest <- cbind(TestData, SpeciesPrediction)
+View(SecondTest)
