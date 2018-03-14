@@ -9,7 +9,7 @@ output:
     highlight: github
 ---
 
-## Long, long ago....
+## Long, long ago in a galaxy far, far away....
 
 A brave fellow student gave a presentation using the KNN matching algorithm to predict the class of an unknown (and possibly alien) species....
 
@@ -124,6 +124,13 @@ An intuitive first impulse to evaluate the model is to divide the number of corr
 The test models have much greater accuracy than the random assignment simulation, so it seems like we're on the right track.  But the accuracy of a model doesn't tell the complete story of a model, and may in fact hide its flaws.
 
 ## Defining the Confusion Matrix
+
+Instead of relying on the single metric of accuracy, we can create a confusion matrix to examine the different types of results the model generated.  To simplify this section, we will look at the set-up of a binary confusion matrix that predicts whether or not a given observation is a member of a class.
+
+While accuracy gives us the proportion of correct results, the confusion matrix separates the correct results into two sets:
+
+* True Positive (TP): the model correctly predicted YES 
+* True Negative (TN): the model correctly predicted NO
 
 ![Confusion Matrix](ConfusionMatrix.png)
 
