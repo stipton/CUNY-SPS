@@ -240,8 +240,13 @@ confusionMatrix(ThirdTest$Species, ThirdTest$SpeciesPrediction, dnn = c("Predict
 ```
 
 ```{r}
+library(heuristica)
 AccuracyVector <- numeric() 
-KappaVector <- numeric()
+df <- data.frame(Accuracy = double(),
+                 Sensitivy = double(),
+                 Specificity = double(),
+                 Precision = double(),
+                 stringsAsFactors=FALSE)
 for(i in 1:30) {
   SpeciesPrediction <- knn(train = select(TrainingData, Height, Weight), 
                          test = select(TestData, Height, Weight), 
@@ -249,7 +254,7 @@ for(i in 1:30) {
                          k = i)
   Test <- cbind(TestData, SpeciesPrediction)
   AccuracyVector[i] <- sum(Test$SpeciesPrediction == Test$Species)/length(Test$SpeciesPrediction)
-  ##KappaVector <- cohen.kappa(, w=NULL,n.obs=NULL,alpha=.05,levels=NULL)
+  CM <- confusionMatrix(Test$Species, Test$simSpeciesPrediction, dnn = c("Prediction", "Actual"))
 }
 Acc <- cbind.data.frame(k = 1:30, AccuracyVector)
 ggplot(Acc, aes(k, AccuracyVector)) + geom_line()
