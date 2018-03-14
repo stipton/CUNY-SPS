@@ -25,11 +25,11 @@ In the comments section during the presentation, Prof. Catlin suggested using a 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 set.seed(1234)
 
-HumanHeight <- rnorm(200, mean = 5.5, sd = .5)
+HumanHeight <- rnorm(300, mean = 5.5, sd = .5)
 WookieHeight <- rnorm(300, mean = 7.0, sd = .75)
 ##EwokHeight <- rnorm(300, mean = 4, sd = .5)
 
-HumanWeight <- rnorm(200, mean = 150, sd = 30)
+HumanWeight <- rnorm(300, mean = 150, sd = 30)
 WookieWeight <- rnorm(300, mean = 200, sd = 50)
 ##EwokWeight <- rnorm(300, mean = 125, sd = 30)
 
@@ -42,12 +42,12 @@ library(dplyr)
 #Split into training and test
 TrainingData <- SWSpecies %>%
   group_by(Species) %>%
-  slice(1:133) %>%
+  slice(1:200) %>%
   ungroup()
 
 TestData <- SWSpecies %>%
   group_by(Species) %>%
-  slice(134:200) %>%
+  slice(201:300) %>%
   ungroup()
 
 library(class)
@@ -100,8 +100,8 @@ From *Data Science for Business*: "Comparison against a random model establishes
 If the results of our models are better than a random simulation, we're looking at the right features to use in our models.
 
 ```{r}
-simSpeciesPrediction <- c(rep("Wookie", 100), rep("Ewok", 101))
-randOrder <- sample(1:201, 201, replace = FALSE)
+simSpeciesPrediction <- c(rep("Wookie", 100), rep("Human", 100))
+randOrder <- sample(1:200, 200, replace = FALSE)
 simSpeciesPrediction <- simSpeciesPrediction[randOrder]
 BaseTest <- cbind(TestData, simSpeciesPrediction)
 BaseTest %>%  kable("html", caption = "Baseline: Random") %>%
@@ -214,13 +214,13 @@ It appears that the $k=3$ model performs better than the $k=9$ model. How do you
 
 ## Values for $k$
 
-From several sources online, a rule of thumb emerged to choose $k$ as the square root of the number of observations in the training set.  With our training set of 399 observations, how would the knn model fare with $k=20$? 
+From several sources online, a rule of thumb emerged to choose $k$ as the square root of the number of observations in the training set.  With our training set of 400 observations, how would the knn model fare with $k=20$? 
 
 [source 1](https://www3.nd.edu/~steve/computing_with_data/17_Refining_kNN/refining_knn.html)
 [source 2](https://books.google.com/books?id=hIOBCgAAQBAJ&pg=PA580&lpg=PA580&dq=finding+best+k+for+knn+square+root&source=bl&ots=FySKAx26uX&sig=V3SF7Xww1-Icehzm91iWGOjopkY&hl=en&sa=X&ved=0ahUKEwjYh9GFr_DMAhXOsh4KHT3HCXkQ6AEIUzAI#v=onepage&q=finding%20best%20k%20for%20knn%20square%20root&f=false)
 
 ```{r}
-## square root of 399 is approx. 20
+## square root of 400 is 20
 k_pref <- TrainingData$Species %>%
   length() %>%
   sqrt() %>%
@@ -237,7 +237,8 @@ ThirdTest %>%  kable("html", caption = "Test3: k = 20") %>%
 
 (AccuracyThird <- sum(ThirdTest$SpeciesPrediction == ThirdTest$Species)/length(ThirdTest$SpeciesPrediction))
 
-confusionMatrix(ThirdTest$Species, ThirdTest$SpeciesPrediction, dnn = c("Prediction", "Actual"))
+a <- confusionMatrix(ThirdTest$Species, ThirdTest$SpeciesPrediction, dnn = c("Prediction", "Actual"))
+statsFromConfusionMatrix(a)
 ```
 
 (https://cran.r-project.org/web/packages/heuristica/heuristica.pdf)
