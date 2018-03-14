@@ -240,6 +240,8 @@ ThirdTest %>%  kable("html", caption = "Test3: k = 20") %>%
 confusionMatrix(ThirdTest$Species, ThirdTest$SpeciesPrediction, dnn = c("Prediction", "Actual"))
 ```
 
+(https://cran.r-project.org/web/packages/heuristica/heuristica.pdf)
+
 ```{r}
 library(heuristica)
 AccuracyVector <- numeric() 
