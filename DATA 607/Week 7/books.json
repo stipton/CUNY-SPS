@@ -1,0 +1,20 @@
+{"books" :[ 
+	{"title": "War and Peace",
+	 "authors": ["Leo Tolstoy"],
+	 "publisher": "Penguin Books",
+	 "publication_date": 2005,
+	 "number_pages": 1408	
+	}
+	{"title": "The Talented Mr. Ripley",
+	 "authors": ["Patricia Highsmith"],
+	 "publisher": "Everyman's Library",
+	 "publication_date": 1955,
+	 "number_pages": 290	
+	}
+	{"title": "The Whole World Was Watching",
+	 "authors": ["Patrick Hinds", "Romaine Patterson"],
+	 "publisher": "Advocate Books",
+	 "publication_date": 2005,
+	 "number_pages": 286	
+	}
+}
