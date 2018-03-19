@@ -1,28 +1,25 @@
-<?xml version = "1.0" encoding = "ISO-8859-1"?>
+<?xml version = "1.0" encoding = "ISO-8859.1"?>
 <books>
 	<book id = "1">
-		<title>War and Peace<\title>
-		<author>Leo Tolstoy<\author>
-		<publisher>Penguin Books<\publisher>
-		<publication_date>2005<\publication_date>
-		<number_pages>1408<\number_pages>
-	<\book>
+		<title>War and Peace</title>
+		<author>Leo Tolstoy</author>
+		<publisher>Penguin Books</publisher>
+		<publication_date>2005</publication_date>
+		<number_pages>1408</number_pages>
+	</book>
 	<book id = "2">
-		<title>The Talented Mr. Ripley<\title>
-		<author>Patricia Highsmith<\author>
-		<publisher>Everyman's Library<\publisher>
-		<publication_date>1955<\publication_date>
-		<number_pages>290<\number_pages>
-	<\book>
+		<title>The Talented Mr. Ripley</title>
+		<author>Patricia Highsmith</author>
+		<publisher>Everyman's Library</publisher>
+		<publication_date>1955</publication_date>
+		<number_pages>290</number_pages>
+	</book>
 	<book id = "3">
-		<title>The Whole World Was Watching<\title>
-		<author>Patrick Hinds<\author>
-		<author>Romaine Patterson<\author>
-		<publisher>Advocate Books<\publisher>
-		<publication_date>2005<\publication_date>
-		<number_pages>286<\number_pages>
-	<\book>
-
-
-
-<\books>
+		<title>The Whole World Was Watching</title>
+		<author>Patrick Hinds</author>
+		<author>Romaine Patterson</author>
+		<publisher>Advocate Books</publisher>
+		<publication_date>2005</publication_date>
+		<number_pages>286</number_pages>
+	</book>
+</books>
