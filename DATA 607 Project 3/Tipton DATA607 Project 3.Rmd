@@ -48,12 +48,10 @@ msu.classes[6,3] <- msu.classes[6,1] %>%
 msu.classes[6,1] <- msu.classes[6,1] %>%
   str_extract(".*:") %>%
   str_remove(":")
+  
+kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
 
-msu.classes <- msu.classes %>%
-  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped"))
-
-msu.classes
+class(msu.classes)
 ```
 
 ### 2. Cincinnati
@@ -69,11 +67,9 @@ cin.classes <- as.data.frame(cin.table[2])
 
 colnames(cin.classes) <- c("Type", "Number", "Title", "Description", "Syllabus")
 
-cin.classes <- cin.classes %>%
-  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped"))
+kable_styling(kable(cin.classes, "html"), bootstrap_options = "striped")
 
-cin.classes
+class(cin.classes)
 ```
 
 ### 3. CUNY SPS
@@ -85,11 +81,9 @@ cuny.classes <- read.csv("cuny.classes.csv", header = TRUE, stringsAsFactors = F
 
 colnames(cuny.classes) <- c("Type", "Number", "Title", "Description", "Credits", "Prerequisites")
 
-cuny.classes <- cuny.classes %>%
-  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped"))
+kable_styling(kable(cuny.classes, "html"), bootstrap_options = "striped")
 
-cuny.classes
+class(cuny.classes)
 ```
 
 ### 4. Northwestern
@@ -123,11 +117,9 @@ for(i in 1:length(norw.links)) {
 
 colnames(norw.classes) <- c("Title", "Description")
 
-norw.classes <- norw.classes %>%
-  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped"))
+kable_styling(kable(norw.classes, "html"), bootstrap_options = "striped")
 
-norw.classes
+class(norw.classes)
 ```
 
 ### 5. Arizona State University
@@ -151,11 +143,9 @@ asu.descriptions <- asu.descriptions[1:10]
 asu.classes <- cbind.data.frame(asu.titles, asu.descriptions)
 colnames(asu.classes) <- c("Title", "Description")
 
-asu.classes <- asu.classes %>%
-  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped"))
+kable_styling(kable(asu.classes, "html"), bootstrap_options = "striped")
 
-asu.classes
+class(asu.classes)
 ```
 
 ### 6. MIT
@@ -180,10 +170,26 @@ mit.titles <- mit.titles %>%
 mit.titles$Number <- str_extract(mit.titles$Number, "\\d*\\.[\\dA-Z]\\d*")
 mit.titles$Credits <- str_extract(mit.titles$Credits, "\\b\\d+")
 
+mit.desc <- character(nrow(mit.title))
+
+mit.cat15a <- read_html ("http://student.mit.edu/catalog/m15a.html") ## class number in (15.00, 15.299)
+
+## EXTRACT AS TABLES AND JOIN?
+
+mit.class15a <- mit.cat15a %>%
+  html_nodes("#contentleft > table > tbody > tr:nth-child(3) > td > table:nth-child(4) > tbody > tr > td > h3:nth-child(651)") %>% ## using selector gadget
+  html_text %>%
+  as.data.frame()
 
 
+mit.cat15b <- read_html ("http://student.mit.edu/catalog/m15b.html") ## class number in (15.30, 15.699) 
+mit.cat15c <- read_html ("http://student.mit.edu/catalog/m15c.html") ## class number in (15.70, 15.999) 
+mit.cat6a <- read_html ("http://student.mit.edu/catalog/m6a.html") ## class number in (6.00, 6.299)
+mit.cat6c <- read_html ("http://student.mit.edu/catalog/m6c.html") ## class number in (6.80, 6.999)
+mit.cat18a <- read_html ("http://student.mit.edu/catalog/m18a.html") ## class number in (18.00, 18.299)
 
 
+## first idea - probably no good
 
 for(i in 1:nrows(mit.titles)) {
   if(mit.titles$Number[i] > 15.00 & mit.titles$Number[i] < 15.299) {
@@ -202,9 +208,11 @@ for(i in 1:nrows(mit.titles)) {
     html_nodes('#main-content p') %>%
     html_text() %>%
     paste(collapse = "")
+####  
   
-  
-  
+kable_styling(kable(mit.classes, "html"), bootstrap_options = "striped")
+
+class(mit.classes)  
   
   
 }
