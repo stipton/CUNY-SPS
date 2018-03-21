@@ -1,0 +1,212 @@
+---
+title: "DATA 607 Project 3"
+author: "Steve Tipton"
+date: "March 25, 2018"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3  
+    theme: united  # "default", "cerulean", "journal", "flatly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+    highlight: pygments
+editor_options: 
+  chunk_output_type: console
+---
+
+### Set up environment and load libraries
+
+```{r, results = "hide", message = FALSE, warning = FALSE}
+rm(list = ls())
+library(kableExtra)
+library(dplyr)
+library(class)
+library(knitr)
+library(RCurl)
+library(XML)
+library(jsonlite)
+library(rvest)
+library(stringr)
+library(tidyr)
+```
+
+### 1. Michigan State University
+
+```{r}
+msu <- read_html('https://accounting.broad.msu.edu/academic-programs/ms-business-analytics/course-descriptions/')
+
+msu.classes <- msu %>%
+  html_nodes('h2~ ul li') %>% ## using selector gadget
+  html_text() %>%
+  as.data.frame() 
+
+msu.classes <- msu.classes %>%
+  separate(colnames(msu.classes[1]), c("Title","Number"), sep = '\\(', extra = "merge") %>%
+  separate(Number, c("Number","Description"), sep = '\\)', extra = "merge")
+
+msu.classes[6,3] <- msu.classes[6,1] %>%
+  str_extract(":.*") %>%
+  str_remove(":")
+msu.classes[6,1] <- msu.classes[6,1] %>%
+  str_extract(".*:") %>%
+  str_remove(":")
+
+msu.classes <- msu.classes %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = c("striped"))
+
+msu.classes
+```
+
+### 2. Cincinnati
+
+```{r}
+cin <- read_html("https://business.uc.edu/graduate/masters/ms-business-analytics/msba-academics.html")
+
+cin.table <- cin %>% 
+  html_nodes("table.table") %>%
+  html_table(fill = TRUE, header = TRUE)
+
+cin.classes <- as.data.frame(cin.table[2])
+
+colnames(cin.classes) <- c("Type", "Number", "Title", "Description", "Syllabus")
+
+cin.classes <- cin.classes %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = c("striped"))
+
+cin.classes
+```
+
+### 3. CUNY SPS
+
+I'm such a nerd - when planning my coursework at SPS, I made an Excel sheet with all the courses and their descriptions by hand, copying and pasting from the website.  May as well put it to use!
+
+```{r}
+cuny.classes <- read.csv("cuny.classes.csv", header = TRUE, stringsAsFactors = FALSE)
+
+colnames(cuny.classes) <- c("Type", "Number", "Title", "Description", "Credits", "Prerequisites")
+
+cuny.classes <- cuny.classes %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = c("striped"))
+
+cuny.classes
+```
+
+### 4. Northwestern
+
+```{r}
+norw <- read_html("https://sps.northwestern.edu/masters/data-science/program-courses.php")
+
+norw.links <- norw %>%
+  htmlParse() %>%
+  xpathSApply("//table//a/@href") %>%
+  str_extract_all("/program-courses.*") %>%
+  unlist()
+
+norw.classes <- data.frame()
+
+for(i in 1:length(norw.links)) {
+  url1 <- "https://sps.northwestern.edu/masters/data-science"
+  url2 <- norw.links[i]
+  final.url <- paste(url1, url2, sep = "")
+  course <- read_html(final.url)
+  course.title <- course %>%
+    html_nodes('h3') %>%
+    html_text()
+  norw.classes[i,1] <- course.title
+  course.desc <- course %>%
+    html_nodes('#main-content p') %>%
+    html_text() %>%
+    paste(collapse = "")
+  norw.classes[i,2] <- course.desc
+}
+
+colnames(norw.classes) <- c("Title", "Description")
+
+norw.classes <- norw.classes %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = c("striped"))
+
+norw.classes
+```
+
+### 5. Arizona State University
+
+```{r}
+asu <- read_html("https://wpcarey.asu.edu/masters-programs/business-analytics/curriculum")
+
+asu.titles <- asu %>%
+  html_nodes("h3.panel-title") %>% 
+  html_text() %>%
+  as.character() 
+
+asu.descriptions <- asu %>%
+  html_nodes("div.panel-body p") %>%
+  html_text() %>%
+  as.character()
+
+asu.descriptions[10] <- paste(asu.descriptions[10:12], collapse = "")
+asu.descriptions <- asu.descriptions[1:10]
+
+asu.classes <- cbind.data.frame(asu.titles, asu.descriptions)
+colnames(asu.classes) <- c("Title", "Description")
+
+asu.classes <- asu.classes %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = c("striped"))
+
+asu.classes
+```
+
+### 6. MIT
+
+```{r}
+mit <- read_html("http://mitsloan.mit.edu/master-of-business-analytics/program-components/curriculum/")
+
+mit.titles <- mit %>%
+  html_nodes("p:nth-child(5) , b , #ctl00_content_DropZone1_uxColumnDisplay_ctl00_uxControlColumn_ctl00_uxWidgetHost_uxWidgetHost_widget_ux_Description li") %>% ## using selector gadget
+  html_text %>%
+  as.data.frame()
+
+mit.titles <- cbind(c(rep("Core", 8), rep("Seminar", 2), rep("Electives", 27)), mit.titles[1])
+colnames(mit.titles) <- c("Type", "Title")
+mit.titles <- mit.titles[-c(1, 9, 11), ]
+row.names(mit.titles) <- 1:nrow(mit.titles)
+
+mit.titles <- mit.titles %>%
+  separate(colnames(mit.titles[2]), c("Title","Number"), sep = '\\(', extra = "merge") %>%
+  separate(Number, c("Number","Credits"), sep = ',', extra = "merge")
+
+mit.titles$Number <- str_extract(mit.titles$Number, "\\d*\\.[\\dA-Z]\\d*")
+mit.titles$Credits <- str_extract(mit.titles$Credits, "\\b\\d+")
+
+
+
+
+
+
+for(i in 1:nrows(mit.titles)) {
+  if(mit.titles$Number[i] > 15.00 & mit.titles$Number[i] < 15.299) {
+    url <- "http://student.mit.edu/catalog/m15a.html"
+  } else if(mit.titles$Number[i] > 15.30 & mit.titles$Number[i] < 15.699) {
+    url <- "http://student.mit.edu/catalog/m15b.html"
+  } else if(mit.titles$Number[i] > 15.70 & mit.titles$Number[i] < 15.999) {
+    url <- "http://student.mit.edu/catalog/m15c.html"
+  } else if(mit.titles$Number[i] > 6.00 & mit.titles$Number[i] < 6.299) {
+    url <- "http://student.mit.edu/catalog/m6a.html"
+  } else if(mit.titles$Number[i] > 6.80) {
+    url <- "http://student.mit.edu/catalog/m6c.html"
+  } 
+  course <- read_html(url)
+  course.desc <- course %>%
+    html_nodes('#main-content p') %>%
+    html_text() %>%
+    paste(collapse = "")
+  
+  
+  
+  
+  
+}
+
+```
