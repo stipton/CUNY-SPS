@@ -49,6 +49,10 @@ msu.classes[6,1] <- msu.classes[6,1] %>%
   str_extract(".*:") %>%
   str_remove(":")
   
+msu.classes <- cbind.data.frame(c(rep("msu", nrows(msu.classes)), msu.classes)
+
+colnames(msu.classes)[1] <- "School"
+  
 kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
 
 class(msu.classes)
@@ -65,7 +69,9 @@ cin.table <- cin %>%
 
 cin.classes <- as.data.frame(cin.table[2])
 
-colnames(cin.classes) <- c("Type", "Number", "Title", "Description", "Syllabus")
+cin.classes <- cbind.data.frame(c(rep("cin", nrows(cin.classes)), cin.classes)
+
+colnames(cin.classes) <- c("School", "Type", "Number", "Title", "Description", "Syllabus")
 
 kable_styling(kable(cin.classes, "html"), bootstrap_options = "striped")
 
@@ -78,8 +84,11 @@ I'm such a nerd - when planning my coursework at SPS, I made an Excel sheet with
 
 ```{r}
 cuny.classes <- read.csv("cuny.classes.csv", header = TRUE, stringsAsFactors = FALSE)
+## cuny.classes <- read.csv("https://raw.githubusercontent.com/stipton/CUNY-SPS/master/DATA%20607%20Project%203/cuny.classes.csv")
 
-colnames(cuny.classes) <- c("Type", "Number", "Title", "Description", "Credits", "Prerequisites")
+cuny.classes <- cbind.data.frame(c(rep("cuny", nrows(cuny.classes)), cuny.classes)
+
+colnames(cuny.classes) <- c("School", "Type", "Number", "Title", "Description", "Credits", "Prerequisites")
 
 kable_styling(kable(cuny.classes, "html"), bootstrap_options = "striped")
 
@@ -115,7 +124,9 @@ for(i in 1:length(norw.links)) {
   norw.classes[i,2] <- course.desc
 }
 
-colnames(norw.classes) <- c("Title", "Description")
+norw.classes <- cbind.data.frame(c(rep("norw", nrows(norw.classes)), norw.classes)
+
+colnames(norw.classes) <- c("School", "Title", "Description")
 
 kable_styling(kable(norw.classes, "html"), bootstrap_options = "striped")
 
@@ -141,7 +152,10 @@ asu.descriptions[10] <- paste(asu.descriptions[10:12], collapse = "")
 asu.descriptions <- asu.descriptions[1:10]
 
 asu.classes <- cbind.data.frame(asu.titles, asu.descriptions)
-colnames(asu.classes) <- c("Title", "Description")
+
+asu.classes <- cbind.data.frame(c(rep("asu", nrows(asu.classes)), asu.classes)
+
+colnames(asu.classes) <- c("School", "Title", "Description")
 
 kable_styling(kable(asu.classes, "html"), bootstrap_options = "striped")
 
@@ -209,7 +223,9 @@ for(i in 1:nrows(mit.titles)) {
     html_text() %>%
     paste(collapse = "")
 ####  
-  
+
+mit.classes <- cbind.data.frame(c(rep("mit", nrows(mit.classes)), mit.classes)
+
 kable_styling(kable(mit.classes, "html"), bootstrap_options = "striped")
 
 class(mit.classes)  
