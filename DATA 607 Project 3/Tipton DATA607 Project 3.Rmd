@@ -48,11 +48,10 @@ msu.classes[6,3] <- msu.classes[6,1] %>%
 msu.classes[6,1] <- msu.classes[6,1] %>%
   str_extract(".*:") %>%
   str_remove(":")
-  
-msu.classes <- cbind.data.frame(c(rep("msu", nrows(msu.classes)), msu.classes)
 
-colnames(msu.classes)[1] <- "School"
-  
+School <- rep("msu", nrow(msu.classes))
+msu.classes <- cbind.data.frame(School, msu.classes)
+
 kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
 
 class(msu.classes)
@@ -69,7 +68,8 @@ cin.table <- cin %>%
 
 cin.classes <- as.data.frame(cin.table[2])
 
-cin.classes <- cbind.data.frame(c(rep("cin", nrows(cin.classes)), cin.classes)
+School <- rep("cin", nrow(cin.classes))
+cin.classes <- cbind.data.frame(School, cin.classes)
 
 colnames(cin.classes) <- c("School", "Type", "Number", "Title", "Description", "Syllabus")
 
@@ -83,10 +83,10 @@ class(cin.classes)
 I'm such a nerd - when planning my coursework at SPS, I made an Excel sheet with all the courses and their descriptions by hand, copying and pasting from the website.  May as well put it to use!
 
 ```{r}
-cuny.classes <- read.csv("cuny.classes.csv", header = TRUE, stringsAsFactors = FALSE)
-## cuny.classes <- read.csv("https://raw.githubusercontent.com/stipton/CUNY-SPS/master/DATA%20607%20Project%203/cuny.classes.csv")
+cuny.classes <- read.csv("https://raw.githubusercontent.com/stipton/CUNY-SPS/master/DATA%20607%20Project%203/cuny.classes.csv")
 
-cuny.classes <- cbind.data.frame(c(rep("cuny", nrows(cuny.classes)), cuny.classes)
+School <- rep("cuny", nrow(cuny.classes))
+cuny.classes <- cbind.data.frame(School, cuny.classes)
 
 colnames(cuny.classes) <- c("School", "Type", "Number", "Title", "Description", "Credits", "Prerequisites")
 
@@ -124,7 +124,8 @@ for(i in 1:length(norw.links)) {
   norw.classes[i,2] <- course.desc
 }
 
-norw.classes <- cbind.data.frame(c(rep("norw", nrows(norw.classes)), norw.classes)
+School <- rep("norw", nrow(norw.classes))
+norw.classes <- cbind.data.frame(School, norw.classes)
 
 colnames(norw.classes) <- c("School", "Title", "Description")
 
@@ -153,7 +154,8 @@ asu.descriptions <- asu.descriptions[1:10]
 
 asu.classes <- cbind.data.frame(asu.titles, asu.descriptions)
 
-asu.classes <- cbind.data.frame(c(rep("asu", nrows(asu.classes)), asu.classes)
+School <- rep("asu", nrow(asu.classes))
+asu.classes <- cbind.data.frame(School, asu.classes)
 
 colnames(asu.classes) <- c("School", "Title", "Description")
 
