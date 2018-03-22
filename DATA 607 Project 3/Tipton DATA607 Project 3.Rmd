@@ -51,6 +51,8 @@ msu.classes[6,1] <- msu.classes[6,1] %>%
 
 School <- rep("msu", nrow(msu.classes))
 msu.classes <- cbind.data.frame(School, msu.classes)
+msu.classes[,"Type"] <- character(nrow(msu.classes))
+msu.classes[,"Credits"] <- character(nrow(msu.classes))
 
 kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
 
@@ -72,6 +74,8 @@ School <- rep("cin", nrow(cin.classes))
 cin.classes <- cbind.data.frame(School, cin.classes)
 
 colnames(cin.classes) <- c("School", "Type", "Number", "Title", "Description", "Syllabus")
+cin.classes[,"Credits"] <- character(nrow(cin.classes))
+cin.classes <- cin.classes[-6]
 
 kable_styling(kable(cin.classes, "html"), bootstrap_options = "striped")
 
@@ -89,6 +93,9 @@ School <- rep("cuny", nrow(cuny.classes))
 cuny.classes <- cbind.data.frame(School, cuny.classes)
 
 colnames(cuny.classes) <- c("School", "Type", "Number", "Title", "Description", "Credits", "Prerequisites")
+
+cuny.classes <- cuny.classes[,-7]
+cuny.classes$Credits <- as.character(cuny.classes$Credits)
 
 kable_styling(kable(cuny.classes, "html"), bootstrap_options = "striped")
 
@@ -128,6 +135,9 @@ School <- rep("norw", nrow(norw.classes))
 norw.classes <- cbind.data.frame(School, norw.classes)
 
 colnames(norw.classes) <- c("School", "Title", "Description")
+norw.classes[,"Type"] <- character(nrow(norw.classes))
+norw.classes[,"Credits"] <- character(nrow(norw.classes))
+norw.classes[,"Number"] <- character(nrow(norw.classes))
 
 kable_styling(kable(norw.classes, "html"), bootstrap_options = "striped")
 
@@ -158,81 +168,145 @@ School <- rep("asu", nrow(asu.classes))
 asu.classes <- cbind.data.frame(School, asu.classes)
 
 colnames(asu.classes) <- c("School", "Title", "Description")
+asu.classes[,"Type"] <- character(nrow(asu.classes))
+asu.classes[,"Credits"] <- character(nrow(asu.classes))
+asu.classes[,"Number"] <- character(nrow(asu.classes))
 
 kable_styling(kable(asu.classes, "html"), bootstrap_options = "striped")
 
 class(asu.classes)
 ```
 
-### 6. MIT
+### 6. Purdue
 
 ```{r}
-mit <- read_html("http://mitsloan.mit.edu/master-of-business-analytics/program-components/curriculum/")
+pur <- read_html("http://www.krannert.purdue.edu/masters/programs/business-analytics-and-information-management/curriculum/home.php")
 
-mit.titles <- mit %>%
-  html_nodes("p:nth-child(5) , b , #ctl00_content_DropZone1_uxColumnDisplay_ctl00_uxControlColumn_ctl00_uxWidgetHost_uxWidgetHost_widget_ux_Description li") %>% ## using selector gadget
-  html_text %>%
-  as.data.frame()
+pur.classes <- pur %>%
+  html_nodes("h2~ p ,h2 ,h2~ ul li") %>% 
+  html_text() %>%
+  as.character()
 
-mit.titles <- cbind(c(rep("Core", 8), rep("Seminar", 2), rep("Electives", 27)), mit.titles[1])
-colnames(mit.titles) <- c("Type", "Title")
-mit.titles <- mit.titles[-c(1, 9, 11), ]
-row.names(mit.titles) <- 1:nrow(mit.titles)
+pur.classes <- pur.classes[-c(1,2,3,18,26,39,71:76)]
+pur.classes[16] <- paste(pur.classes[16:21], collapse = " ")
+pur.classes[39] <- paste(pur.classes[39:40], collapse = " ")
+pur.classes[44] <- paste(pur.classes[44:45], collapse = " ")
+pur.classes[55] <- paste(pur.classes[55:58], collapse = " ")
+pur.classes <- pur.classes[-c(17:21,40,45,56:58)]
 
-mit.titles <- mit.titles %>%
-  separate(colnames(mit.titles[2]), c("Title","Number"), sep = '\\(', extra = "merge") %>%
-  separate(Number, c("Number","Credits"), sep = ',', extra = "merge")
+pur.titles <- pur.classes[c(TRUE,FALSE)]
+pur.desc <- pur.classes[c(FALSE,TRUE)]
+pur.classes <- cbind.data.frame(pur.titles, pur.desc)
 
-mit.titles$Number <- str_extract(mit.titles$Number, "\\d*\\.[\\dA-Z]\\d*")
-mit.titles$Credits <- str_extract(mit.titles$Credits, "\\b\\d+")
+School <- rep("pur", nrow(pur.classes))
+pur.classes <- cbind.data.frame(School, pur.classes)
 
-mit.desc <- character(nrow(mit.title))
+colnames(pur.classes) <- c("School", "Title", "Description")
+pur.classes[,"Type"] <- character(nrow(pur.classes))
+pur.classes[,"Credits"] <- character(nrow(pur.classes))
+pur.classes[,"Number"] <- character(nrow(pur.classes))
 
-mit.cat15a <- read_html ("http://student.mit.edu/catalog/m15a.html") ## class number in (15.00, 15.299)
-
-## EXTRACT AS TABLES AND JOIN?
-
-mit.class15a <- mit.cat15a %>%
-  html_nodes("#contentleft > table > tbody > tr:nth-child(3) > td > table:nth-child(4) > tbody > tr > td > h3:nth-child(651)") %>% ## using selector gadget
-  html_text %>%
-  as.data.frame()
-
-
-mit.cat15b <- read_html ("http://student.mit.edu/catalog/m15b.html") ## class number in (15.30, 15.699) 
-mit.cat15c <- read_html ("http://student.mit.edu/catalog/m15c.html") ## class number in (15.70, 15.999) 
-mit.cat6a <- read_html ("http://student.mit.edu/catalog/m6a.html") ## class number in (6.00, 6.299)
-mit.cat6c <- read_html ("http://student.mit.edu/catalog/m6c.html") ## class number in (6.80, 6.999)
-mit.cat18a <- read_html ("http://student.mit.edu/catalog/m18a.html") ## class number in (18.00, 18.299)
-
-
-## first idea - probably no good
-
-for(i in 1:nrows(mit.titles)) {
-  if(mit.titles$Number[i] > 15.00 & mit.titles$Number[i] < 15.299) {
-    url <- "http://student.mit.edu/catalog/m15a.html"
-  } else if(mit.titles$Number[i] > 15.30 & mit.titles$Number[i] < 15.699) {
-    url <- "http://student.mit.edu/catalog/m15b.html"
-  } else if(mit.titles$Number[i] > 15.70 & mit.titles$Number[i] < 15.999) {
-    url <- "http://student.mit.edu/catalog/m15c.html"
-  } else if(mit.titles$Number[i] > 6.00 & mit.titles$Number[i] < 6.299) {
-    url <- "http://student.mit.edu/catalog/m6a.html"
-  } else if(mit.titles$Number[i] > 6.80) {
-    url <- "http://student.mit.edu/catalog/m6c.html"
-  } 
-  course <- read_html(url)
-  course.desc <- course %>%
-    html_nodes('#main-content p') %>%
-    html_text() %>%
-    paste(collapse = "")
-####  
-
-mit.classes <- cbind.data.frame(c(rep("mit", nrows(mit.classes)), mit.classes)
-
-kable_styling(kable(mit.classes, "html"), bootstrap_options = "striped")
-
-class(mit.classes)  
-  
-  
-}
-
+kable_styling(kable(pur.classes, "html"), bootstrap_options = "striped")
 ```
+
+### 7. University of Maryland
+
+```{r}
+umd <- read_html("https://www.rhsmith.umd.edu/programs/ms-business-analytics/academics")
+
+umd.classes <- umd %>%
+  html_nodes("p") %>% 
+  html_text() %>%
+  as.character()
+
+umd.classes <- umd.classes[str_detect(umd.classes, "BU[A-Z]{2} \\d")]
+
+School <- rep("umd", length(umd.classes))
+umd.classes <- cbind.data.frame(School, umd.classes)
+
+umd.classes <- umd.classes %>%
+  separate(umd.classes, c("Title","Credits"), sep = '\\(', extra = "merge") %>%
+  separate(Credits, c("Credits","Description"), sep = '\\):', extra = "merge")
+
+umd.classes[,"Type"] <- character(nrow(umd.classes))
+umd.classes[,"Number"] <- character(nrow(umd.classes))
+
+kable_styling(kable(umd.classes, "html"), bootstrap_options = "striped")
+```
+
+### 8. Boston University
+
+```{r}
+bum <- read_html("http://www.bu.edu/met/programs/graduate/computer-science/data-analytics/")
+
+bum.classes <- bum %>%
+  html_nodes(".bu_collapsible_container, .bu_collapsible_section") %>% 
+  html_text() %>%
+  as.character()
+
+bum.classes <- bum.classes[-c(1,2)]
+bum.desc <- bum.classes[c(FALSE,TRUE)]
+bum.titles <- bum.classes[c(TRUE,FALSE)]
+bum.titles <- str_sub(bum.titles, 1, 45) ## not perfect, but an approximation of titles
+
+School <- rep("bum", length(bum.titles))
+bum.classes <- cbind.data.frame(School, bum.titles, bum.desc)
+
+colnames(bum.classes) <- c("School", "Title", "Description")
+bum.classes[,"Type"] <- character(nrow(bum.classes))
+bum.classes[,"Credits"] <- character(nrow(bum.classes))
+bum.classes[,"Number"] <- character(nrow(bum.classes))
+
+kable_styling(kable(bum.classes, "html"), bootstrap_options = "striped")
+```
+
+### 9. North Carolina State University
+
+```{r}
+ncs <- read_html("http://analytics.ncsu.edu/?page_id=123")
+
+ncs.classes <- ncs %>%
+  html_nodes("ul+ h3 , #main li , hr+ h3") %>% 
+  html_text() %>%
+  as.character()
+
+ncs.classes[2] <- paste(ncs.classes[2:14], collapse = " ")
+ncs.classes[16] <- paste(ncs.classes[16:25], collapse = " ")
+ncs.classes[27] <- paste(ncs.classes[27:36], collapse = " ")
+ncs.classes[38] <- paste(ncs.classes[38:48], collapse = " ")
+ncs.classes[50] <- paste(ncs.classes[50:59], collapse = " ")
+ncs.classes[61] <- paste(ncs.classes[61:67], collapse = " ")
+ncs.classes <- ncs.classes[-c(3:14,17:25,28:36,39:48,51:59,62:67)]
+
+ncs.titles <- ncs.classes[c(TRUE,FALSE)]
+ncs.desc <- ncs.classes[c(FALSE,TRUE)]
+
+School <- rep("ncs", length(ncs.titles))
+ncs.classes <- cbind.data.frame(School, ncs.titles, ncs.desc)
+
+colnames(ncs.classes) <- c("School", "Title", "Description")
+ncs.classes[,"Type"] <- character(nrow(ncs.classes))
+ncs.classes[,"Credits"] <- character(nrow(ncs.classes))
+ncs.classes[,"Number"] <- character(nrow(ncs.classes))
+
+kable_styling(kable(ncs.classes, "html"), bootstrap_options = "striped")
+```
+
+### Union
+
+```{r}
+full.school.set.ST <- asu.classes %>%
+  union(bum.classes) %>%
+  union(cin.classes) %>%
+  union(cuny.classes) %>%
+  union(msu.classes) %>%
+  union(ncs.classes) %>%
+  union(norw.classes) %>%
+  union(pur.classes) %>%
+  union(umd.classes)
+
+kable_styling(kable(full.school.set.ST, "html"), bootstrap_options = "striped")
+
+write.csv(full.school.set.ST, "data607_educationdata_ST.csv")
+```
+
