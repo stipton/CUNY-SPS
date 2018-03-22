@@ -12,7 +12,9 @@ editor_options:
   chunk_output_type: console
 ---
 
-As the demand for data scientists has grown in the economy, the number of educational programs has also expanded.  For this project, we decided to examine language used in the curricula of a sample of graduate programs to see how the key terms used by educators compare to the key terms found in job postings and resumes.  In other words, *what does academia consider the most important skills for a data scientist?*
+As the demand for data scientists has grown in the economy, the number of educational programs has also expanded.  For this project, we decided to examine language used in the curricula of a sample of graduate programs to see how the key terms used by educators compare to the key terms found in job postings and resumes.  In other words: 
+
+**What does academia consider the most important skills for a data scientist?**
 
 To identify the schools in the study, we began with a simple Google search for the "Top Data Scientist Masters Programs."  Our results included the following websites:
 
