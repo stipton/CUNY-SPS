@@ -23,15 +23,6 @@ To identify the schools in the study, we began with a simple Google search for t
 
 We selected a sample of **NEED NUMBER** schools from these lists by choosing the schools with full curriculum and course descriptions available online.  The process of scraping the information was highly manual, as every school formats their data differently and must be tackled fresh.  In the end, while we were able to develop sophisticated code to parse many sites, we did encounter several schools that we eliminated from the sample simply due to the level of scraping required (MIT - we'll be back to battle again!).
 
-### Sample Institutions
-
-|School|Website|Degree|Program Name|
-|------|-------|------|------------|
-|Michigan State University|http://broad.msu.edu/businessanalytics/|MS|Business Analytics|
-|University of Cincinnati|MS|Business Analytics|
-|CUNY SPS|MS|Data Science|
-
-
 ### Set up environment and load libraries
 
 ```{r, results = "hide", message = FALSE, warning = FALSE}
@@ -46,6 +37,14 @@ library(jsonlite)
 library(rvest)
 library(stringr)
 library(tidyr)
+```
+
+### Institutions Included
+
+```{r}
+schools <- read.csv("https://raw.githubusercontent.com/stipton/CUNY-SPS/master/DATA%20607%20Project%203/DATA%20607%20Proj%203%20Schools.csv")
+
+kable_styling(kable(schools, "html"), bootstrap_options = "striped")
 ```
 
 ### 1. Michigan State University
