@@ -12,6 +12,26 @@ editor_options:
   chunk_output_type: console
 ---
 
+As the demand for data scientists has grown in the economy, the number of educational programs has also expanded.  For this project, we decided to examine language used in the curricula of a sample of graduate programs to see how the key terms used by educators compare to the key terms found in job postings and resumes.  In other words, *what does academia consider the most important skills for a data scientist?*
+
+To identify the schools in the study, we began with a simple Google search for the "Top Data Scientist Masters Programs."  Our results included the following websites:
+
+* https://www.predictiveanalyticstoday.com/top-predictive-analytics-programs/
+* http://www.mastersindatascience.org/schools/top-masters-in-analytics/
+* http://starbridgepartners.com/2017/09/23-top-us-schools-offering-a-masters-programs-in-data-science/
+* https://www.forbes.com/sites/bernardmarr/2017/05/02/the-6-best-data-science-masters-degree-courses-in-the-us/#4c798a7674a1
+
+We selected a sample of **NEED NUMBER** schools from these lists by choosing the schools with full curriculum and course descriptions available online.  The process of scraping the information was highly manual, as every school formats their data differently and must be tackled fresh.  In the end, while we were able to develop sophisticated code to parse many sites, we did encounter several schools that we eliminated from the sample simply due to the level of scraping required (MIT - we'll be back to battle again!).
+
+### Sample Institutions
+
+|School|Website|Degree|Program Name|
+|------|-------|------|------------|
+|Michigan State University|http://broad.msu.edu/businessanalytics/|MS|Business Analytics|
+|University of Cincinnati|MS|Business Analytics|
+|CUNY SPS|MS|Data Science|
+
+
 ### Set up environment and load libraries
 
 ```{r, results = "hide", message = FALSE, warning = FALSE}
@@ -55,8 +75,6 @@ msu.classes[,"Type"] <- character(nrow(msu.classes))
 msu.classes[,"Credits"] <- character(nrow(msu.classes))
 
 kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
-
-class(msu.classes)
 ```
 
 ### 2. Cincinnati
@@ -78,8 +96,6 @@ cin.classes[,"Credits"] <- character(nrow(cin.classes))
 cin.classes <- cin.classes[-6]
 
 kable_styling(kable(cin.classes, "html"), bootstrap_options = "striped")
-
-class(cin.classes)
 ```
 
 ### 3. CUNY SPS
@@ -98,8 +114,6 @@ cuny.classes <- cuny.classes[,-7]
 cuny.classes$Credits <- as.character(cuny.classes$Credits)
 
 kable_styling(kable(cuny.classes, "html"), bootstrap_options = "striped")
-
-class(cuny.classes)
 ```
 
 ### 4. Northwestern
@@ -140,8 +154,6 @@ norw.classes[,"Credits"] <- character(nrow(norw.classes))
 norw.classes[,"Number"] <- character(nrow(norw.classes))
 
 kable_styling(kable(norw.classes, "html"), bootstrap_options = "striped")
-
-class(norw.classes)
 ```
 
 ### 5. Arizona State University
@@ -173,8 +185,6 @@ asu.classes[,"Credits"] <- character(nrow(asu.classes))
 asu.classes[,"Number"] <- character(nrow(asu.classes))
 
 kable_styling(kable(asu.classes, "html"), bootstrap_options = "striped")
-
-class(asu.classes)
 ```
 
 ### 6. Purdue
