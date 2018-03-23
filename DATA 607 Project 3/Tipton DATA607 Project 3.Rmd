@@ -512,7 +512,10 @@ skill <- keyword_regexes[i]
 new.skill.col <- unlist(str_detect(tolower(full.school.set$Description),skill))
 full.school.set[,keywords$Skill[i]] <- new.skill.col
 }
+```
+### Convert to long form
 
+```{r}
 long.school.set <- full.school.set %>% 
   gather("Skill", "Appears", 7:length(full.school.set)) %>%
   inner_join(keywords) %>%
