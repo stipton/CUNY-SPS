@@ -75,7 +75,7 @@ msu.classes <- cbind.data.frame(School, msu.classes)
 msu.classes[,"Type"] <- character(nrow(msu.classes))
 msu.classes[,"Credits"] <- character(nrow(msu.classes))
 
-kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(msu.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 2. Cincinnati
@@ -96,7 +96,7 @@ colnames(cin.classes) <- c("School", "Type", "Number", "Title", "Description", "
 cin.classes[,"Credits"] <- character(nrow(cin.classes))
 cin.classes <- cin.classes[-6]
 
-kable_styling(kable(cin.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(cin.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 3. CUNY SPS
@@ -114,7 +114,7 @@ colnames(cuny.classes) <- c("School", "Type", "Number", "Title", "Description", 
 cuny.classes <- cuny.classes[,-7]
 cuny.classes$Credits <- as.character(cuny.classes$Credits)
 
-kable_styling(kable(cuny.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(cuny.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 4. Northwestern
@@ -154,7 +154,7 @@ norw.classes[,"Type"] <- character(nrow(norw.classes))
 norw.classes[,"Credits"] <- character(nrow(norw.classes))
 norw.classes[,"Number"] <- character(nrow(norw.classes))
 
-kable_styling(kable(norw.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(norw.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 5. Arizona State University
@@ -185,7 +185,7 @@ asu.classes[,"Type"] <- character(nrow(asu.classes))
 asu.classes[,"Credits"] <- character(nrow(asu.classes))
 asu.classes[,"Number"] <- character(nrow(asu.classes))
 
-kable_styling(kable(asu.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(asu.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 6. Purdue
@@ -217,7 +217,7 @@ pur.classes[,"Type"] <- character(nrow(pur.classes))
 pur.classes[,"Credits"] <- character(nrow(pur.classes))
 pur.classes[,"Number"] <- character(nrow(pur.classes))
 
-kable_styling(kable(pur.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(pur.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 7. University of Maryland
@@ -242,7 +242,7 @@ umd.classes <- umd.classes %>%
 umd.classes[,"Type"] <- character(nrow(umd.classes))
 umd.classes[,"Number"] <- character(nrow(umd.classes))
 
-kable_styling(kable(umd.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(umd.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 8. Boston University
@@ -268,7 +268,7 @@ bum.classes[,"Type"] <- character(nrow(bum.classes))
 bum.classes[,"Credits"] <- character(nrow(bum.classes))
 bum.classes[,"Number"] <- character(nrow(bum.classes))
 
-kable_styling(kable(bum.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(bum.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### 9. North Carolina State University
@@ -300,7 +300,7 @@ ncs.classes[,"Type"] <- character(nrow(ncs.classes))
 ncs.classes[,"Credits"] <- character(nrow(ncs.classes))
 ncs.classes[,"Number"] <- character(nrow(ncs.classes))
 
-kable_styling(kable(ncs.classes, "html"), bootstrap_options = "striped")
+#kable_styling(kable(ncs.classes, "html"), bootstrap_options = "striped")
 ```
 
 ### Union
@@ -316,8 +316,243 @@ full.school.set.ST <- asu.classes %>%
   union(pur.classes) %>%
   union(umd.classes)
 
-kable_styling(kable(full.school.set.ST, "html"), bootstrap_options = "striped")
+#kable_styling(kable(full.school.set.ST, "html"), bootstrap_options = "striped")
 
-write.csv(full.school.set.ST, "data607_educationdata_ST.csv")
+### write.csv(full.school.set.ST, "data607_educationdata_ST.csv")
 ```
 
+### From Youngkoung
+
+### 1. NYU
+
+```{r}
+nyu <- read_html("http://www.stern.nyu.edu/programs-admissions/ms-business-analytics/academics/course-index")
+nyu.Description <- nyu %>%
+  html_nodes("#region-2 :nth-child(2) .content") %>%
+  html_text()  %>%
+  str_replace_all("[\r\n]" , " ") %>%
+  str_replace_all("Module I: NYU Stern - New York", "  ") %>%
+  str_replace_all("Module II: London", "  ") %>%
+  str_replace_all("Module III: NYU Shanghai - Shanghai", "  ") %>%
+  str_replace_all("Module IV: NYU Stern - New York", " ") %>%
+  str_replace_all("Module V: NYU Stern - New York", " ") %>%
+  str_split("Course description:|Strategic Capstone") %>%
+  data.frame(stringsAsFactors=FALSE)
+
+
+title <- html_nodes(nyu, "strong") %>%
+  html_text()
+
+previous <- html_nodes(nyu, "em") %>%
+  html_text() 
+
+# Remove course title 
+for(i in 2:16)
+{ 
+  d <- nyu.Description[i, ] %>%
+    str_replace_all(title[i], "  ") 
+    nyu.Description[i, ] <- d
+}
+# Remove <em> field
+for(i in 2:14)
+{ 
+  d <- nyu.Description[i, ] %>%
+    str_replace_all(previous[i], "  ") 
+  nyu.Description[i, ] <- d
+}
+
+
+nyu.Description <- nyu.Description[2:16, ]
+title <- data.frame(title[1:15])
+colnames(title) <- "Name"
+School <- "nyu"
+Program <- "Master of Science in Business Analytics"
+
+nyu.class <- cbind(School, Program, title, nyu.Description)
+colnames(nyu.class)[4] <- "Description"
+
+#kable_styling(kable(nyu.class, "html"), bootstrap_options = "striped")
+```
+
+### 2. University of Maryland University College
+
+```{r}
+umuc <- read_html("http://www.umuc.edu/academic-programs/masters-degrees/data-analytics.cfm")
+umuc.class<- html_nodes(umuc, "div.course-popup") %>%
+  html_text() %>%
+  data.frame()
+umuc.class<- umuc.class %>%
+  separate(colnames(umuc.class[1]), c("fill","Name", "CodeCredits", "Description"), sep = "\\t") %>%
+  separate(CodeCredits, c("Code", "Credits"), sep = "\\|")
+
+umuc.class$fill <- NULL
+
+School <- "umuc"
+Program <- "Master of Science in Data Analytics"
+
+umuc.class <- cbind(School, Program, umuc.class)
+
+#kable_styling(kable(umuc.class, "html"), bootstrap_options = "striped")
+
+```
+
+#### 3. Duke
+```{r}
+duke <- read_html("https://www.fuqua.duke.edu/programs/mqm-business-analytics/curriculum")
+duke.class.Name <-html_nodes(duke, ".accordion_item_content strong") %>%
+  html_text() %>%
+  data.frame()
+colnames(duke.class.Name) <- "Name"
+duke.Description <-html_nodes(duke, ".accordion_item_content p") %>%
+  html_text() %>%
+  data.frame()
+duke.Description <- duke.Description[2:28, ] 
+
+School <- "duke"
+Program <- "Master of Quantitative Management Business Analytics"
+
+duke.class <- cbind(School, Program, duke.class.Name, duke.Description)
+colnames(duke.class)[4] <- "Description"
+
+#kable_styling(kable(duke.class, "html"), bootstrap_options = "striped")
+
+```
+
+#### 4. Berkeley
+```{r}
+berkeley <- read_html("https://www.ischool.berkeley.edu/courses/datasci")
+berkeley.class.Name <-html_nodes(berkeley, ".course-title a") %>%
+  html_text() %>%
+  data.frame()
+colnames(berkeley.class.Name) <- "Name"
+berkeley.Description <-html_nodes(berkeley, ".views-field-field-course-catalog-description .field-content ") %>%
+  html_text() %>%
+  data.frame()
+
+School <- "berk"
+Program <- "Master of Information and Data Science"
+
+berkeley.class <- cbind(School, Program, berkeley.class.Name, berkeley.Description)
+colnames(berkeley.class)[4] <- "Description"
+
+#kable_styling(kable(berkeley.class, "html"), bootstrap_options = "striped")
+
+```
+
+#### 5. Texas A&M
+```{r}
+txam <- read_html("https://analytics.stat.tamu.edu/for-students-2/")
+txam.class.Name <-html_nodes(txam, "h4 a") %>%
+  html_text() %>%
+  str_replace_all("[\r\n\t]" , "") %>%
+  data.frame()
+
+txam.class.Name <- txam.class.Name  %>%
+  separate(colnames(txam.class.Name [1]), c("Name","Credits"), sep = '\\(', extra = "merge")
+
+txam.class.Name$Credits <- str_replace(txam.class.Name$Credits, "\\)", " ")
+
+txam.Description1 <-html_nodes(txam, "h4") %>%
+  html_text() %>%
+  data.frame()
+# select odd rows in addition to rows 2 and 42
+txam.Description <- txam.Description1[c(2, seq(1, nrow(txam.Description1), 2), 42),] 
+txam.Description <- txam.Description[-c(2, 3, 22)]
+
+School <- "txam"
+Program <- "Master of Science Analytics"
+
+txam.class <- cbind(School, Program, txam.class.Name, txam.Description)
+colnames(txam.class)[5] <- "Description"
+
+#kable_styling(kable(txam.class, "html"), bootstrap_options = "striped")
+
+
+```
+
+#### Combine Shools
+
+```{r}
+MSDSprogram <- bind_rows(nyu.class, umuc.class, berkeley.class, duke.class, txam.class)
+###write.csv(MSDSprogram, file = "H:/DataScience/CUNY/Spring2018/DATA607/project3/MA_DS_part2.csv")
+```
+
+### Combine Steve and Youngkoung Data Sets
+
+```{r}
+colnames(MSDSprogram)[3] <- "Title"
+colnames(MSDSprogram)[5] <- "Number"
+MSDSprogram.formatted <- MSDSprogram[,-2]
+MSDSprogram.formatted[,"Type"] <- character(nrow(MSDSprogram.formatted))
+
+full.school.set <- union(full.school.set.ST, MSDSprogram.formatted)
+
+##scroll_box(kable_styling(kable(full.school.set.ST, "html"), bootstrap_options = "striped"))
+```
+
+### Prepare list of key terms - from Heather G. and Raj K.
+
+```{r}
+keywords <- read.table("https://raw.githubusercontent.com/heathergeiger/Data607_Project3_Group3/master/heathergeiger_individual_work/combine_ny_and_san_francisco/keywords.txt",header=TRUE,check.names=FALSE,stringsAsFactors=FALSE,sep="\t")
+keywords <- keywords[grep('This is probably too tough',keywords$Other.notes,invert=TRUE),]
+
+keyword_list <- vector("list",length=nrow(keywords))
+
+for(i in 1:nrow(keywords)) {
+keywords_this_row <- keywords$Skill[i]
+if(keywords$Synonyms[i] != "None"){
+	keywords_this_row <- c(keywords_this_row,unlist(strsplit(keywords$Synonyms[i],",")[[1]]))
+	}
+keyword_list[[i]] <- keywords_this_row
+}
+
+#Couldn't figure out how to get a regex for a space, comma, or word boundary. However did get one that can get either a space or comma.
+space_or_comma <- "[[:space:],]"
+word_boundary <- "\\b"
+
+pattern_for_one_keyword <- function(keyword){
+	regexes <- paste0(space_or_comma,keyword,space_or_comma)
+	regexes <- c(regexes,paste0(word_boundary,keyword,word_boundary))
+	regexes <- c(regexes,paste0(word_boundary,keyword,space_or_comma))
+	regexes <- c(regexes,paste0(space_or_comma,keyword,word_boundary))
+	return(paste0(regexes,collapse="|"))
+}
+
+pattern_for_multiple_keywords <- function(keyword_vector){
+	if(length(keyword_vector) == 1){return(pattern_for_one_keyword(keyword_vector))}
+	if(length(keyword_vector) > 1){
+		individual_regexes <- c()
+		for(i in 1:length(keyword_vector))
+		{
+			individual_regexes <- c(individual_regexes,pattern_for_one_keyword(keyword_vector[i]))
+		}
+	return(paste0(individual_regexes,collapse="|"))	
+	}
+}
+
+keyword_regexes <- unlist(lapply(keyword_list,function(x)pattern_for_multiple_keywords(x)))
+```
+
+### Compare key terms to title/course data
+
+```{r}
+for(i in 1:length(keyword_regexes)) {
+full.school.set[,keywords$Skill[i]] <- NA
+skill <- keyword_regexes[i]
+new.skill.col <- unlist(str_detect(tolower(full.school.set$Description),skill))
+full.school.set[,keywords$Skill[i]] <- new.skill.col
+}
+
+long.school.set <- full.school.set %>% 
+  gather("Skill", "Appears", 7:length(full.school.set)) %>%
+  inner_join(keywords) %>%
+  select(-c(Synonyms, Other.notes))
+
+##kable_styling(kable(long.school.set, "html"), bootstrap_options = "striped")
+
+##resumes_across_cities_incl_this_skill <- resumes_across_cities[skill_in_text,]
+##num_resumes_this_skill <- length(unique(paste0(resumes_across_cities_incl_this_skill$City,resumes_across_cities_incl_this_skill$Resume.num)))
+##num_resumes_per_skill <- c(num_resumes_per_skill,num_resumes_this_skill)
+##print(paste0("Skill ",keywords$Skill[i]," found in ",num_resumes_this_skill," resumes"))
+##}
+```
