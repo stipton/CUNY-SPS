@@ -506,10 +506,13 @@ keyword_regexes <- unlist(lapply(keyword_list,function(x)pattern_for_multiple_ke
 ### Compare key terms to title/course data
 
 ```{r}
+cols <- c("Title", "Description")
+full.school.set$Title.Desc <- do.call(paste, c(full.school.set[cols], sep=" "))
+
 for(i in 1:length(keyword_regexes)) {
 full.school.set[,keywords$Skill[i]] <- NA
 skill <- keyword_regexes[i]
-new.skill.col <- unlist(str_detect(tolower(full.school.set$Description),skill))
+new.skill.col <- unlist(str_detect(tolower(full.school.set$Title.Desc),skill))
 full.school.set[,keywords$Skill[i]] <- new.skill.col
 }
 ```
@@ -517,7 +520,7 @@ full.school.set[,keywords$Skill[i]] <- new.skill.col
 
 ```{r}
 long.school.set <- full.school.set %>% 
-  gather("Skill", "Appears", 7:length(full.school.set)) %>%
+  gather("Skill", "Appears", 8:length(full.school.set)) %>%
   inner_join(keywords) %>%
   select(-c(Synonyms, Other.notes)) %>%
   inner_join(schools)
