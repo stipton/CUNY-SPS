@@ -1,15 +1,15 @@
-School,Degree,Degree Name,Website
-Michigan State University,MS,Business Analytics,http://broad.msu.edu/businessanalytics/
-University of Cincinnati,MS,Business Analytics,http://business.uc.edu/graduate/msbana.html
-CUNY SPS,MS,Data Science,http://catalog.sps.cuny.edu/preview_program.php?catoid=2&poid=607
-Northwestern University SPS,MS,Data Science,http://sps.northwestern.edu/program-areas/graduate/predictive-analytics/
-Arizona State University,MS,Business Analytics,http://wpcarey.asu.edu/masters-programs/business-analytics/curriculum
-Purdue University,MS,Business Analytics and Information Management,http://www.krannert.purdue.edu/masters/programs/business-analytics-and-information-management/
-University of Maryland,MS,Business Analytics,http://www.rhsmith.umd.edu/programs/ms-programs/marketing-analytics
-Boston University Metropolitan College,MS,Computer Science concentration in Data Analytics,http://www.bu.edu/met/programs/graduate/computer-science/data-analytics/
-North Carolina State University,MS,Analytics,http://analytics.ncsu.edu/
-New York University,MS,Business Analytics,http://www.stern.nyu.edu/programs-admissions/global-degrees/business-analytics/
-University of Maryland University College,MS,Data Analytics,http://www.umuc.edu/academic-programs/masters-degrees/data-analytics.cfm	
-Texas A&M University,MS,	Analytics,https://analytics.stat.tamu.edu/
-Duke University,MQM (Master of Quantitative Management),Business Analytics,https://www.fuqua.duke.edu/programs/mqm-business-analytics
-Berkeley University,MA,Information and Data Science,https://www.ischool.berkeley.edu/programs/mids
+School.Code,School,Degree,Degree Name,Website
+msu,Michigan State University,MS,Business Analytics,http://broad.msu.edu/businessanalytics/
+cin,University of Cincinnati,MS,Business Analytics,http://business.uc.edu/graduate/msbana.html
+cuny,CUNY SPS,MS,Data Science,http://catalog.sps.cuny.edu/preview_program.php?catoid=2&poid=607
+norw,Northwestern University SPS,MS,Data Science,http://sps.northwestern.edu/program-areas/graduate/predictive-analytics/
+asu,Arizona State University,MS,Business Analytics,http://wpcarey.asu.edu/masters-programs/business-analytics/curriculum
+pur,Purdue University,MS,Business Analytics and Information Management,http://www.krannert.purdue.edu/masters/programs/business-analytics-and-information-management/
+umd,University of Maryland,MS,Business Analytics,http://www.rhsmith.umd.edu/programs/ms-programs/marketing-analytics
+bum,Boston University Metropolitan College,MS,Computer Science concentration in Data Analytics,http://www.bu.edu/met/programs/graduate/computer-science/data-analytics/
+ncs,North Carolina State University,MS,Analytics,http://analytics.ncsu.edu/
+nyu,New York University,MS,Business Analytics,http://www.stern.nyu.edu/programs-admissions/global-degrees/business-analytics/
+umuc,University of Maryland University College,MS,Data Analytics,http://www.umuc.edu/academic-programs/masters-degrees/data-analytics.cfm	
+txam,Texas A&M University,MS,	Analytics,https://analytics.stat.tamu.edu/
+duke,Duke University,MQM (Master of Quantitative Management),Business Analytics,https://www.fuqua.duke.edu/programs/mqm-business-analytics
+berk,Berkeley University,MA,Information and Data Science,https://www.ischool.berkeley.edu/programs/mids
