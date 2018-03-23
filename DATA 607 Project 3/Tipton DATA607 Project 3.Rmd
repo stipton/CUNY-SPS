@@ -513,7 +513,7 @@ new.skill.col <- unlist(str_detect(tolower(full.school.set$Description),skill))
 full.school.set[,keywords$Skill[i]] <- new.skill.col
 }
 ```
-### Convert to long form
+### Convert to long form and join with `keywords` and `schools` data frames
 
 ```{r}
 long.school.set <- full.school.set %>% 
