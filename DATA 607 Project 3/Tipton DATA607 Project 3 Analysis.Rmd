@@ -1,0 +1,109 @@
+---
+title: "DATA 607 Project 3 - Analysis"
+author: "Steve Tipton"
+date: "March 25, 2018"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+    theme: united  # "default", "cerulean", "journal", "flatly", "readable", "spacelab", "united", "cosmo", "lumen", "paper", "sandstone", "simplex", "yeti"
+    highlight: pygments
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, results = "hide", message = FALSE, warning = FALSE}
+rm(list = ls())
+library(kableExtra)
+library(dplyr)
+library(class)
+library(knitr)
+library(RCurl)
+library(XML)
+library(jsonlite)
+library(rvest)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+```
+
+```{r}
+## Load saved data
+
+load("long_school_set.Rdata")
+
+## total number of observations
+nrow(long.school.set)
+
+## total number of courses in data set
+(n.courses <- length(unique(long.school.set$Title.Desc)))
+
+school.work <- long.school.set %>%
+  select(c(School, Degree, Degree.Name, Title, Title.Desc, Soft.or.technical, Skill, Appears)) %>%
+  filter(Appears == TRUE)
+
+## total number of skills found
+(n.results <- nrow(school.work))
+
+## total number of courses with skills
+(n.courses.w.skills <- length(unique(school.work$Title.Desc)))
+
+## Average number of skills found in each course (including zeroes)
+(avg.n.results.per.course <- n.results/n.courses)
+
+## Examining results
+
+## Soft v. Technical
+table(school.work$Soft.or.technical, school.work$Appears) %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = "striped")
+
+table(school.work$Soft.or.technical, school.work$Appears) %>%
+  as.data.frame %>%
+  ggplot(aes(x = Var1, y = Freq, fill = Var1)) +
+    geom_col() +
+    labs(title = "Education Results by Skill Type", x = "Skill Type", y = "Number of Results") + 
+    scale_fill_discrete(name = "Skill Type") +
+    geom_text(aes(label = Freq, y = Freq + 12), size = 5, position = position_dodge(0.9), vjust = 0)
+
+## By School
+
+table(school.work$School, school.work$Appears) %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = "striped")
+
+table(school.work$School, school.work$Appears) %>%
+  as.data.frame %>%
+  ggplot(aes(x = Var1, y = Freq)) +#, fill = Var1)) +
+    geom_col(fill = "steelblue2") +
+    #theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+    labs(title = "Education Results by School", x = "School", y = "Number of Results") + 
+    coord_flip() +
+    geom_text(aes(label = Freq, y = Freq + 2), size = 3, position = position_dodge(0.9), vjust = 0)
+
+## By Skill
+
+table(school.work$Skill, school.work$Appears) %>%
+  kable("html") %>%
+  kable_styling(bootstrap_options = "striped")
+
+school.work %>%
+  group_by(Soft.or.technical, Skill) %>% 
+  summarize(Skill.Percent = 100 * sum(Appears == TRUE)/n.courses) %>%
+  ggplot(aes(x = reorder(Skill, Skill.Percent), Skill.Percent, fill = Soft.or.technical)) + 
+    geom_bar(stat = 'identity', position = 'dodge') +
+    coord_flip() +
+    labs(title = "Data Science Masters Program Skills", x = "Skill", y = "Percentage of Courses with Skill") + 
+    scale_fill_discrete(name = "Skill Type")
+
+school.work %>%
+  group_by(School, Skill) %>% 
+  summarize(Skill.Percent = 100 * sum(Appears == TRUE)/n.courses) %>%
+  ggplot(aes(x = reorder(Skill, Skill.Percent, FUN = sum), Skill.Percent, fill = School)) + 
+    geom_bar(stat = 'identity') +
+    coord_flip() +
+    #facet_wrap(~ School)+
+    labs(title = "Data Science Masters Program Skills", x = "Skill", y = "Percentage of Courses with Skill") + 
+    scale_fill_discrete(name = "School")
+```
+
