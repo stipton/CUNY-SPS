@@ -1,5 +1,5 @@
 ---
-title: "DATA 607 Project 3"
+title: "DATA 607 Project 3 - Part 1"
 author: "Steve Tipton"
 date: "March 25, 2018"
 output:
@@ -23,7 +23,7 @@ To identify the schools in the study, we began with a simple Google search for t
 * http://starbridgepartners.com/2017/09/23-top-us-schools-offering-a-masters-programs-in-data-science/
 * https://www.forbes.com/sites/bernardmarr/2017/05/02/the-6-best-data-science-masters-degree-courses-in-the-us/#4c798a7674a1
 
-We selected a sample of **NEED NUMBER** schools from these lists by choosing the schools with full curriculum and course descriptions available online.  The process of scraping the information was highly manual, as every school formats their data differently and must be tackled fresh.  In the end, while we were able to develop sophisticated code to parse many sites, we did encounter several schools that we eliminated from the sample simply due to the level of scraping required (MIT - we'll be back to battle again!).
+We selected a sample of 14 schools from these lists by choosing the schools with full curriculum and course descriptions available online.  The process of scraping the information was highly manual, as every school formats their data differently and must be tackled fresh.  In the end, while we were able to develop sophisticated code to parse many sites, we did encounter several schools that we eliminated from the sample simply due to the level of scraping required (MIT - we'll be back to battle again!).
 
 ### Set up environment and load libraries
 
@@ -43,6 +43,8 @@ library(tidyr)
 
 ### Institutions Included
 
+I partnered on this part of the assignment with YoungKoung Kim, and we kept a shared Google document to keep track of our progress.  I uploaded the spreadsheet to github and then pulled the table into R.
+
 ```{r}
 schools <- read.csv("https://raw.githubusercontent.com/stipton/CUNY-SPS/master/DATA%20607%20Project%203/DATA%20607%20Proj%203%20Schools.csv")
 
@@ -50,6 +52,10 @@ kable_styling(kable(schools, "html"), bootstrap_options = "striped")
 ```
 
 ### From Steve
+
+For my portion of the web scraping, I compiled data from 9 university masters programs.
+
+The basic process for most universities was to read in the website, and then use the `html_nodes` and `html_text` functions to extract the course data.  Once retrieved, I used functions from the `tidyverse` to clean the data.  Finally, I brought all the fields together into a data frame for the school, making sure to name add and rename columns as needed in order to perform a final union on all the data sets.
 
 #### 1. Michigan State University
 
@@ -114,6 +120,8 @@ cuny.classes$Credits <- as.character(cuny.classes$Credits)
 ```
 
 #### 4. Northwestern University
+
+For Northwestern, the course names and course descriptions are not on the same web page.  I used the `xpathSApply` function to locate links on the curricullum page that led to different web pages containing the course descriptions.
 
 ```{r}
 norw <- read_html("https://sps.northwestern.edu/masters/data-science/program-courses.php")
@@ -259,6 +267,8 @@ bum.classes[,"Number"] <- character(nrow(bum.classes))
 
 #### 9. North Carolina State University
 
+Scraping the data from NCSU returned a single vector mixing together titles and descriptions, so a little more manual clean-up was required than usual.
+
 ```{r}
 ncs <- read_html("http://analytics.ncsu.edu/?page_id=123")
 
@@ -289,7 +299,9 @@ ncs.classes[,"Number"] <- character(nrow(ncs.classes))
 
 #### Union to combine school data
 
-```{r}
+Since I constructed all of the data sets for each school to have the same columns, I can use the `union` function to connect them in one data set.  Note that I added an identifier column to each individual data set in order to tag which school offers the course.  This identifier also allows me to join the data set for courses to the school data set.
+
+```{r, message = FALSE, warning = FALS}
 full.school.set.ST <- asu.classes %>%
   union(bum.classes) %>%
   union(cin.classes) %>%
@@ -299,11 +311,11 @@ full.school.set.ST <- asu.classes %>%
   union(norw.classes) %>%
   union(pur.classes) %>%
   union(umd.classes)
-
-### write.csv(full.school.set.ST, "data607_educationdata_ST.csv")
 ```
 
 ### From Youngkoung
+
+YoungKoung also delivered school information to the project, and I include her work below.
 
 #### 1. NYU
 
@@ -442,13 +454,15 @@ colnames(txam.class)[5] <- "Description"
 
 #### Combine Shools
 
-```{r}
+```{r, message = FALSE, warning = FALS}
 MSDSprogram <- bind_rows(nyu.class, umuc.class, berkeley.class, duke.class, txam.class)
 ```
 
 ### Combine Steve and Youngkoung Data Sets
 
-```{r}
+After a little formatting to align our data frames, we are able to combine them into the full data set of courses that we will examine.
+
+```{r, message = FALSE, warning = FALS}
 colnames(MSDSprogram)[3] <- "Title"
 colnames(MSDSprogram)[5] <- "Number"
 MSDSprogram.formatted <- MSDSprogram[,-2]
@@ -457,10 +471,18 @@ MSDSprogram.formatted[,"Type"] <- character(nrow(MSDSprogram.formatted))
 full.school.set <- union(full.school.set.ST, MSDSprogram.formatted)
 colnames(full.school.set)[1] <- "School.Code"
 
-kable_styling(kable(head(full.school.set.ST, 10), "html"), bootstrap_options = "striped")
+kable_styling(kable(head(full.school.set, 10), "html"), bootstrap_options = "striped")
 ```
 
 ### Prepare list of key terms - from Heather G. and Raj K.
+
+In order to compare our data across different areas of study (education vs. job seekers vs. job postings), our group constructed one list of key terms to search for in our data sets.  
+
+The list of data science skills is based off the list found here: https://www.thebalance.com/list-of-data-scientist-skills-2062381
+
+We culled the list and categorized it into two skill types to use in our analysis, soft skills and technical skills.
+
+Heather and Raj developed the code to create the keyword list in R, including synonyms for certain words to count the same (such as "collaboration" and "collaborative").  The next R code chunk is Heather's code for creating regular expressions based on the keyword list (huge thanks to Heather and Raj here!).
 
 ```{r}
 keywords <- read.table("https://raw.githubusercontent.com/heathergeiger/Data607_Project3_Group3/master/heathergeiger_individual_work/combine_ny_and_san_francisco/keywords.txt",header=TRUE,check.names=FALSE,stringsAsFactors=FALSE,sep="\t")
@@ -505,6 +527,8 @@ keyword_regexes <- unlist(lapply(keyword_list,function(x)pattern_for_multiple_ke
 
 ### Compare key terms to title/course data
 
+With the keyword list now prepared, we began the search on the education data list.  First, we decided to treat the title and the description for each course as one unit, so I combined the Title column and the Description column together into one field.  We then created a loop to check each keyword against the `Title.Desc` column and populate a `TRUE`/`FALSE` column showing whether or not that course contained the keyword.
+
 ```{r}
 cols <- c("Title", "Description")
 full.school.set$Title.Desc <- do.call(paste, c(full.school.set[cols], sep=" "))
@@ -515,8 +539,15 @@ skill <- keyword_regexes[i]
 new.skill.col <- unlist(str_detect(tolower(full.school.set$Title.Desc),skill))
 full.school.set[,keywords$Skill[i]] <- new.skill.col
 }
+
+kable_styling(kable(head(full.school.set, 3), "html"), bootstrap_options = "striped")
 ```
+
 ### Convert to long form and join with `keywords` and `schools` data frames
+
+As a final step before analysis, we converted the wide data set with all the skills in separate columns into a long data set with one row for each course/skill combination.  We also joined the data set together with the `keywords` data set (to add the `Skill Type` variable) and the `schools`data set (to add the complete school information).
+
+To facilitate data analysis, we saved the final data set so we won't need to run the web scraping applications again when beginning our analysis.
 
 ```{r}
 long.school.set <- full.school.set %>% 
@@ -525,7 +556,7 @@ long.school.set <- full.school.set %>%
   select(-c(Synonyms, Other.notes)) %>%
   inner_join(schools)
 
-kable_styling(kable(head(long.school.set, 10), "html"), bootstrap_options = "striped")
+kable_styling(kable(head(long.school.set, 3), "html"), bootstrap_options = "striped")
 
 save(long.school.set, file="long_school_set.Rdata")
 ```
