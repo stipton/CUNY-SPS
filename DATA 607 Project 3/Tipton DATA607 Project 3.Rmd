@@ -462,7 +462,7 @@ MSDSprogram <- bind_rows(nyu.class, umuc.class, berkeley.class, duke.class, txam
 
 After a little formatting to align our data frames, we are able to combine them into the full data set of courses that we will examine.
 
-```{r, message = FALSE, warning = FALS}
+```{r, message = FALSE, warning = FALSE}
 colnames(MSDSprogram)[3] <- "Title"
 colnames(MSDSprogram)[5] <- "Number"
 MSDSprogram.formatted <- MSDSprogram[,-2]
