@@ -301,7 +301,7 @@ ncs.classes[,"Number"] <- character(nrow(ncs.classes))
 
 Since I constructed all of the data sets for each school to have the same columns, I can use the `union` function to connect them in one data set.  Note that I added an identifier column to each individual data set in order to tag which school offers the course.  This identifier also allows me to join the data set for courses to the school data set.
 
-```{r, message = FALSE, warning = FALS}
+```{r, message = FALSE, warning = FALSE}
 full.school.set.ST <- asu.classes %>%
   union(bum.classes) %>%
   union(cin.classes) %>%
@@ -454,7 +454,7 @@ colnames(txam.class)[5] <- "Description"
 
 #### Combine Shools
 
-```{r, message = FALSE, warning = FALS}
+```{r, message = FALSE, warning = FALSE}
 MSDSprogram <- bind_rows(nyu.class, umuc.class, berkeley.class, duke.class, txam.class)
 ```
 
